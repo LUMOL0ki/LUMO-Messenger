@@ -1,0 +1,7 @@
+﻿.received-message {
+    background-color: var(--secondary-color);
+}
+
+.sent-message {
+    background-color: var(--primary-color);
+}

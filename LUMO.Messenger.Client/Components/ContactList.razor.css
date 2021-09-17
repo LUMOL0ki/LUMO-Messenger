@@ -1,0 +1,11 @@
+﻿.online {
+    background-color: var(--online-status-color);
+}
+
+.offline {
+    background-color: var(--offline-status-color);
+}
+
+.unknown {
+    background-color: var(--unknown-status-color);
+}

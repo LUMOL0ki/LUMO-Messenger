@@ -1,21 +1,78 @@
 ﻿@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 
+:root {
+    --container-border-radius: 8px;
+    --element-border-radius: 4px;
+}
+
+    :root light-theme {
+        --primary-bg-color: black;
+        --secondary-bg-color: white;
+        --primary-text-color: black;
+        --secondary-text-color: gray;
+
+        --primary-color: black;
+        --secondary-color: gray;
+
+        --primary-btn-color: black;
+        --primary-btn-hover-color: dimgray;
+        --primary-btn-active-color: gray;
+        --secondary-btn-color: dimgray;
+        --secondary-btn-hover-color: gray;
+        --secondary-btn-active-color: gray;
+    }
+
+    :root dark-theme {
+        --primary-bg-color: white;
+        --secondary-bg-color: black;
+        --primary-text-color: white;
+        --secondary-text-color: gray;
+        --primary-btn-color: white;
+        --primary-btn-hover-color: gray;
+        --primary-btn-active-color: gray;
+        --secondary-btn-color: gray;
+        --secondary-btn-hover-color: gray;
+        --secondary-btn-active-color: gray
+    }
+
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background-color: var(--primary-bg-color);
 }
 
-a, .btn-link {
-    color: #0077cc;
+.container {
+    position: relative;
+    background-color: var(--secondary-bg-color);
+    border-radius: var(--container-border-radius);
 }
 
-.btn-primary {
-    color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+.element {
+    position: relative;
+    border-radius: var(--element-border-radius);
 }
 
 .content {
     padding-top: 1.1rem;
+}
+
+.flex-row {
+    display: flex;
+    flex-direction: row;
+}
+
+.flex-row-reverse {
+    display: flex;
+    flex-direction: row-reverse;
+}
+
+.flex-column { 
+    display: flex;
+    flex-direction: column;
+}
+
+.flex-column-reverse {
+    display: flex;
+    flex-direction: column-reverse;
 }
 
 .valid.modified:not([type=checkbox]) {

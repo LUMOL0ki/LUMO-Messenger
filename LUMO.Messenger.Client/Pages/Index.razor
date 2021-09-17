@@ -1,7 +1,18 @@
 ﻿@page "/"
 
-<h1>Hello, world!</h1>
+<div class="">
+    <div class="container">
+        
+    </div>
 
-Welcome to your new app.
+    <div class="container">
+        <input type="" placeholder="Send message..."/>
+        <button type="button">
+            <!--<span class=""></span>-->
+        </button>
+    </div>
+</div>
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+@code {
+    private IEnumerable<Message> Messages { get; set; }
+}

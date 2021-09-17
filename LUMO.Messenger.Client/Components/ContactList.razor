@@ -1,0 +1,48 @@
+﻿<div class="container">
+    <ul class="list">
+    @foreach(Contact contact in Contacts)
+    {
+        <li class="list-item">
+            <div class=flex-row>
+                <div class="flex-column">
+                    <div class="flex-row">
+                        <span>@contact.Nickname</span>
+                        <span class"unknown"></span>
+                    </div>
+                    <span>Last message</span>
+                </div>
+                <span>Message-icon</span>
+            </div>
+        </li>
+    }
+    </ul>
+</div>
+
+@code {
+    private ICollection<Group> Groups { get; set; } = new List<Group>()
+    {
+        new Group
+        {
+            Name = "All"
+        }
+    };
+
+    private ICollection<Contact> Contacts { get; set; } = new List<Contact>()
+    {
+        new Contact
+        {
+            Nickname = "David",
+            Status = ContatStatus.Online
+        },
+        new Contact
+        {
+            Nickname = "Adam",
+            Status = ContatStatus.Offline
+        },
+        new Contact
+        {
+            Nickname = "Lukas",
+            Status = ContatStatus.Unknown
+        }
+    };
+}
