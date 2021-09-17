@@ -1,4 +1,91 @@
-﻿.online {
+﻿.contact-list {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--secondary-bg-color);
+    /*box-shadow: 0 0 8px var(--shadow-color);*/
+    padding: 16px;
+    width: 450px;
+    height: auto;
+}
+
+.element {
+    background-color: var(--primary-bg-color);
+    display: flex;
+    flex-direction: row;
+    column-gap: 8px;
+    align-items: center;
+    padding: 8px;
+}
+
+    .element:hover[b-zml6lqz4q1] {
+        background-color: var(--secondary-btn-hover-color);
+    }
+
+    .element .search-icon {
+        width: 24px;
+        text-align: center;
+    }
+
+    .element input {
+        background: transparent;
+        border: none;
+        padding: 8px 4px;
+        width: 100%;
+    }
+
+    .element input:focus {
+        outline: none;
+        border: none;
+    }
+
+.list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.list-item {
+    padding: 8px 16px;
+    margin: 8px 0;
+    align-items: center;
+    border-radius: var(--element-border-radius);
+    background-color: var(--secondary-btn-color);
+}
+
+    .list-item:hover {
+        background-color: var(--secondary-btn-hover-color);
+    }
+
+    .list-item:active {
+        background-color: var(--secondary-btn-active-color);
+    }
+
+    .list-item .contact-left {
+        width: 100%;
+    }
+
+.name {
+    font-weight: bold;
+    align-items: center;
+    column-gap: 4px;
+}
+
+.last-message {
+    color: var(--secondary-text-color);
+    font-size: small;
+}
+
+.contact-right {
+    font-size: larger;
+}
+
+.status {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.online {
     background-color: var(--online-status-color);
 }
 

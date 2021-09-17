@@ -1,28 +1,33 @@
-﻿@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
+﻿@import url('../css/icons/font/bootstrap-icons.css');
+@charset "UTF-8";
 
 :root {
     --container-border-radius: 8px;
     --element-border-radius: 4px;
+    --shadow-color: #00000035;
+    --transition-duration: 200ms;
 }
 
-    :root light-theme {
-        --primary-bg-color: black;
-        --secondary-bg-color: white;
-        --primary-text-color: black;
-        --secondary-text-color: gray;
-
-        --primary-color: black;
-        --secondary-color: gray;
-
-        --primary-btn-color: black;
-        --primary-btn-hover-color: dimgray;
-        --primary-btn-active-color: gray;
-        --secondary-btn-color: dimgray;
-        --secondary-btn-hover-color: gray;
-        --secondary-btn-active-color: gray;
+    :root,
+    :root.light-theme {
+        --primary-bg-color: #F7F0F0;
+        --secondary-bg-color: #FDFCFC;
+        --primary-text-color: #49454A;
+        --secondary-text-color: #5E585F;
+        --primary-color: #F1E4E4;
+        --secondary-color: #5E585F;
+        --primary-btn-color: #7EB9B1;
+        --primary-btn-hover-color: #A2CDC7;
+        --primary-btn-active-color: #BDDBD7;
+        --secondary-btn-color: transparent;
+        --secondary-btn-hover-color: #F1E4E4;
+        --secondary-btn-active-color: #E3C9C9;
+        --online-status-color: #22BDA5;
+        --offline-status-color: #DE2846;
+        --unknown-status-color: #675656;
     }
 
-    :root dark-theme {
+    :root.dark-theme {
         --primary-bg-color: white;
         --secondary-bg-color: black;
         --primary-text-color: white;
@@ -37,7 +42,10 @@
 
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: var(--primary-text-color);
     background-color: var(--primary-bg-color);
+    padding: 0;
+    margin: 0;
 }
 
 .container {
@@ -49,6 +57,10 @@ html, body {
 .element {
     position: relative;
     border-radius: var(--element-border-radius);
+}
+
+.smooth-transition {
+    transition: var(--transition-duration);
 }
 
 .content {
@@ -73,6 +85,19 @@ html, body {
 .flex-column-reverse {
     display: flex;
     flex-direction: column-reverse;
+}
+
+::placeholder {
+    color: var(--secondary-text-color);
+    opacity: 1;
+}
+
+.send-input {
+
+}
+
+.search-input {
+
 }
 
 .valid.modified:not([type=checkbox]) {

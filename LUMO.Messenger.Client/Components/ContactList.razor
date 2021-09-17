@@ -1,18 +1,33 @@
-﻿<div class="container">
+﻿<div class="contact-list">
+    <div class="element smooth-transition">
+        <span class="search-icon bi bi-search"></span>
+        <input type="search" placeholder="Search..."/>
+    </div>
+
+    <h3>Groups</h3>
+    <ul class="list">
+    @foreach(Group group in Groups)
+    {
+        <li class="list-item flex-row smooth-transition">
+            <span class="contact-left name">@group.Name</span>
+            <span class="contact-right bi bi-chat-right-dots"></span>
+        </li>
+    }
+    </ul>
+    
+    <h3>Contacts</h3>
     <ul class="list">
     @foreach(Contact contact in Contacts)
     {
-        <li class="list-item">
-            <div class=flex-row>
-                <div class="flex-column">
-                    <div class="flex-row">
-                        <span>@contact.Nickname</span>
-                        <span class"unknown"></span>
-                    </div>
-                    <span>Last message</span>
+        <li class="list-item flex-row smooth-transition">
+            <div class="contact-left flex-column">
+                <div class="name flex-row">
+                    <span>@contact.Nickname</span>
+                    <span class="status @contact.Status.ToString().ToLower()"></span>
                 </div>
-                <span>Message-icon</span>
+                <span class="last-message">Last message</span>
             </div>
+            <span class="contact-right bi bi-chat-right-dots"></span>
         </li>
     }
     </ul>

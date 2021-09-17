@@ -1,4 +1,52 @@
-﻿.received-message {
+﻿.chat-control {
+    background-color: var(--primary-bg-color);
+    display: flex;
+    flex-direction: column;
+    row-gap: 8px;
+    height: 100%;
+}
+
+.chat-container {
+    height: 100%;
+}
+
+.send-container {
+    padding: 8px;
+    column-gap: 8px;
+    /*box-shadow: 0 0 8px var(--shadow-color);*/
+}
+
+    .send-container input {
+        background-color: transparent;
+        padding: 16px 24px;
+        border: none;
+        border-radius: var(--element-border-radius);
+        width: 100%;
+    }
+
+        .send-container input:focus {
+            outline: none;
+            border: none;
+            /*box-shadow: inset 0 0 8px var(--shadow-color);*/
+        }
+
+.send-button {
+    border: none;
+    background-color: var(--primary-btn-color);
+    border-radius: var(--element-border-radius);
+    font-size: larger;
+    width: 80px;
+}
+
+    .send-button:hover {
+        background-color: var(--primary-btn-hover-color);
+    }
+
+    .send-button:active {
+        background-color: var(--primary-btn-active-color);
+    }
+
+.received-message {
     background-color: var(--secondary-color);
 }
 
