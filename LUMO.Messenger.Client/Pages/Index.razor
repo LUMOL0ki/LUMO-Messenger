@@ -1,18 +1,71 @@
 ﻿@page "/"
+@using MQTTnet.Client.Options
+@using MQTTnet.Protocol
 
 <div class="chat-control">
     <div class="chat-container flex-column">
-        hello
+        @foreach(Message message in Messages)
+        {
+            <span>@message.Sender</span>
+            <span>@message.Content</span>
+        }
     </div>
 
     <div class="send-container container flex-row">
         <input type="text" placeholder="Send message..."/>
-        <button type="button" class="send-button smooth-transition">
+        <button type="button" class="send-button smooth-transition" @onclick="SendMessage">
             <span class="bi bi-cursor"></span>
         </button>
     </div>
 </div>
 
 @code {
-    private IEnumerable<Message> Messages { get; set; }
+    private ICollection<Message> Messages { get; set; } = new List<Message>();
+    
+    private void SendMessage()
+    {
+        
+    }
+
+    /*
+    protected override async Task OnInitializedAsync()
+    {
+        MqttClientOptionsBuilder mqttBuilder = new MqttClientOptionsBuilder()
+                                            .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V311)
+                                            .WithTcpServer("pcfeib425t.vsb.cz", 1883)
+                                            .WithClientId("MOR0157")
+                                            .WithCredentials("mobilni", "Systemy");
+
+        ManagedMqttClientOptions options = new ManagedMqttClientOptionsBuilder()
+                                            .WithAutoReconnectDelay(TimeSpan.FromSeconds(60))
+                                            .WithClientOptions(mqttBuilder.Build())
+                                            .Build();
+
+        IManagedMqttClient mqttClient = new MqttFactory().CreateManagedMqttClient();
+
+        mqttClient.ConnectedHandler = new MqttClientConnectedHandlerDelegate(OnConnected);
+        mqttClient.DisconnectedHandler = new MqttClientDisconnectedHandlerDelegate(OnDisconnected);
+        mqttClient.ConnectingFailedHandler = new ConnectingFailedHandlerDelegate(OnConnectingFailed);
+        
+        await mqttClient.StartAsync(options);
+        
+        await mqttClient.SubscribeAsync("/mschat/all/#", MqttQualityOfServiceLevel.AtMostOnce);
+        //Task.Delay(1000).GetAwaiter().GetResult();
+    }
+    
+    public static void OnConnected(MqttClientConnectedEventArgs obj)
+    {
+        Console.WriteLine("Is connected.");
+    }
+    
+    public static void OnConnectingFailed(ManagedProcessFailedEventArgs obj)
+    {
+        Console.WriteLine("Connection failed.");
+    }
+    
+    public static void OnDisconnected(MqttClientDisconnectedEventArgs obj)
+    {
+        Console.WriteLine("Is disconnected.");
+    }
+    */
 }
