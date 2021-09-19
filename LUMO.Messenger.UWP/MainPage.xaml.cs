@@ -31,14 +31,13 @@ namespace LUMO.Messenger.UWP
     {
         private ObservableCollection<Message> Messages;
 
-        protected string host = "pcfeib425t.vsb.cz";
-        protected int port = 1883;
-        protected string clientId = "MOR0157";
-        protected string username = "mobilni";
-        protected string password = "Systemy";
+        private readonly string host = "pcfeib425t.vsb.cz";
+        private readonly int port = 1883;
+        private readonly string clientId = "MOR0157";
+        private readonly string username = "mobilni";
+        private readonly string password = "Systemy";
 
-        protected IMqttClient mqttClient = new MqttFactory().CreateMqttClient();
-
+        private IMqttClient mqttClient = new MqttFactory().CreateMqttClient();
 
         public MainPage()
         {
@@ -81,12 +80,12 @@ namespace LUMO.Messenger.UWP
             }
         }
 
-        protected async Task SendMessage(string message)
+        private async Task SendMessage(string message)
         {
             await mqttClient.PublishAsync($"/mschat/all/{clientId}", $"{message} Aktuální čas: {DateTime.Now:HH:mm:ss}");
         }
 
-        protected void ReceiveMessage(string topic, byte[] payload)
+        private void ReceiveMessage(string topic, byte[] payload)
         {
             string[] formating = new string[2] { "undefined", "undefined" };
             int index = 0;

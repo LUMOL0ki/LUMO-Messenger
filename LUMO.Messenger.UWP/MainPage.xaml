@@ -20,7 +20,19 @@
                     <RowDefinition/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Grid.Row="0" FontSize="24" Padding="8" Foreground="{StaticResource PrimaryTextColor}" HorizontalAlignment="Center" Text="{x:Bind clientId}">Username</TextBlock>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Row="0" Grid.Column="0" FontSize="24" Padding="8" Foreground="{StaticResource PrimaryTextColor}" HorizontalAlignment="Center" Text="{x:Bind clientId}">Username</TextBlock>
+                    <!--
+                    <ComboBox Grid.Column="1" PlaceholderText="Unknown" VerticalAlignment="Center">
+                        
+                    </ComboBox>
+                    -->
+                </Grid>
+                
                 <Grid Grid.Row="1" CornerRadius="4" Margin="8" Background="{StaticResource PrimaryBackgroundColor}">
                     <Grid.Resources>
                         <ResourceDictionary>
@@ -41,6 +53,7 @@
                             <ResourceDictionary>
                                 <ResourceDictionary.ThemeDictionaries>
                                     <ResourceDictionary x:Key="Dark">
+                                        <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="{StaticResource PrimaryTextColor}"/>
                                         <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="Transparent"/>
                                         <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="Transparent"/>
                                         <SolidColorBrush x:Key="TextControlButtonForeground" Color="{StaticResource PrimaryTextColor}"/>
@@ -91,11 +104,15 @@
                         <ResourceDictionary>
                             <ResourceDictionary.ThemeDictionaries>
                                 <ResourceDictionary x:Key="Dark">
+                                    <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="{StaticResource PrimaryTextColor}"/>
                                     <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="Transparent"/>
                                 </ResourceDictionary>
                             </ResourceDictionary.ThemeDictionaries>
                         </ResourceDictionary>
                     </TextBox.Resources>
+                    <TextBox.Foreground>
+                        <StaticResource ResourceKey="PrimaryTextColor"/>
+                    </TextBox.Foreground>
                     <TextBox.PlaceholderForeground>
                         <SolidColorBrush Color="{StaticResource SecondaryTextColor}"/>
                     </TextBox.PlaceholderForeground>
