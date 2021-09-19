@@ -1,0 +1,123 @@
+﻿<Page
+    x:Class="LUMO.Messenger.UWP.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:LUMO.Messenger.UWP"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <SplitView x:Name="MainSplitView" DisplayMode="Inline" IsPaneOpen="True">
+        <SplitView.Background>
+            <SolidColorBrush Color="{StaticResource PrimaryBackgroundColor}"/>
+        </SplitView.Background>
+        <SplitView.Pane>
+            <Grid Grid.Column="0" Background="White">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" FontSize="24" Padding="8" Foreground="{StaticResource PrimaryTextColor}" HorizontalAlignment="Center" Text="{x:Bind clientId}">Username</TextBlock>
+                <Grid Grid.Row="1" CornerRadius="4" Margin="8" Background="{StaticResource PrimaryBackgroundColor}">
+                    <Grid.Resources>
+                        <ResourceDictionary>
+                            <ResourceDictionary.ThemeDictionaries>
+                                <ResourceDictionary x:Key="Dark">
+                                    <SolidColorBrush x:Key="GridBackgroundPointerOver" Color="{StaticResource SecondaryButtonHoverColor}"/>
+                                </ResourceDictionary>
+                            </ResourceDictionary.ThemeDictionaries>
+                        </ResourceDictionary>
+                    </Grid.Resources>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <FontIcon Grid.Column="0" Glyph="&#xE721;" Margin="8 4" Foreground="{StaticResource PrimaryTextColor}"/>
+                    <TextBox Grid.Column="1" PlaceholderText="Search..." BorderThickness="0" Padding="4 8" Background="{x:Null}" VerticalAlignment="Stretch" Foreground="{StaticResource PrimaryTextColor}" FocusVisualSecondaryBrush="{x:Null}">
+                        <TextBox.Resources>
+                            <ResourceDictionary>
+                                <ResourceDictionary.ThemeDictionaries>
+                                    <ResourceDictionary x:Key="Dark">
+                                        <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="Transparent"/>
+                                        <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="Transparent"/>
+                                        <SolidColorBrush x:Key="TextControlButtonForeground" Color="{StaticResource PrimaryTextColor}"/>
+                                        <SolidColorBrush x:Key="TextControlButtonForegroundPointerOver" Color="{StaticResource PrimaryTextColor}"/>
+                                        <SolidColorBrush x:Key="TextControlButtonBackgroundPointerOver" Color="{StaticResource SecondaryButtonHoverColor}"/>
+                                        <SolidColorBrush x:Key="TextControlButtonForegroundPressed" Color="{StaticResource PrimaryTextColor}"/>
+                                        <SolidColorBrush x:Key="TextControlButtonBackgroundPressed" Color="{StaticResource SecondaryButtonActiveColor}"/>
+                                    </ResourceDictionary>
+                                </ResourceDictionary.ThemeDictionaries>
+                            </ResourceDictionary>
+                        </TextBox.Resources>
+                        <TextBox.PlaceholderForeground>
+                            <SolidColorBrush Color="{StaticResource SecondaryTextColor}"/>
+                        </TextBox.PlaceholderForeground>
+                    </TextBox>
+                </Grid>
+
+
+                <ListView Grid.Row="2">
+                    <ListViewItem Content="gg"/>
+                </ListView>
+            </Grid>
+        </SplitView.Pane>
+        <Grid Grid.Column="1" Padding="16 8">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition Height="auto"/>
+            </Grid.RowDefinitions>
+
+            <ListView Grid.Row="0">
+                <ListView.Template>
+                    <ControlTemplate>
+                        <Grid>
+                            
+                        </Grid>
+                    </ControlTemplate>
+                </ListView.Template>
+            </ListView>
+
+            <Grid Grid.Row="1" ColumnSpacing="4" CornerRadius="8" Padding="8" Margin="0 8" Background="White">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBox BorderThickness="0" PlaceholderText="Write message..." Padding="16 8" CornerRadius="4" VerticalContentAlignment="Center" VerticalAlignment="Stretch" Background="{x:Null}">
+                    <TextBox.Resources>
+                        <ResourceDictionary>
+                            <ResourceDictionary.ThemeDictionaries>
+                                <ResourceDictionary x:Key="Dark">
+                                    <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="Transparent"/>
+                                </ResourceDictionary>
+                            </ResourceDictionary.ThemeDictionaries>
+                        </ResourceDictionary>
+                    </TextBox.Resources>
+                    <TextBox.PlaceholderForeground>
+                        <SolidColorBrush Color="{StaticResource SecondaryTextColor}"/>
+                    </TextBox.PlaceholderForeground>
+                </TextBox>
+                <Button Grid.Column="2" Width="72" VerticalAlignment="Stretch" BorderThickness="0" CornerRadius="4" Padding="16 8" Foreground="{StaticResource PrimaryTextColor}" FocusVisualSecondaryBrush="{StaticResource PrimaryButtonActiveColor}" FocusVisualPrimaryBrush="{StaticResource PrimaryButtonHoverColor}">
+                    <Button.Resources>
+                        <ResourceDictionary>
+                            <ResourceDictionary.ThemeDictionaries>
+                                <ResourceDictionary x:Key="Dark">
+                                    <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="{StaticResource PrimaryTextColor}"/>
+                                    <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="{StaticResource PrimaryButtonHoverColor}"/>
+                                    <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="{StaticResource PrimaryButtonActiveColor}"/>
+                                </ResourceDictionary>
+                            </ResourceDictionary.ThemeDictionaries>
+                        </ResourceDictionary>
+                    </Button.Resources>
+                    <Button.Background>
+                        <SolidColorBrush Color="{StaticResource PrimaryButtonColor}"/>
+                    </Button.Background>
+                    <FontIcon Glyph="&#xE724;" />
+                </Button>
+            </Grid>
+        </Grid>
+    </SplitView>
+</Page>
