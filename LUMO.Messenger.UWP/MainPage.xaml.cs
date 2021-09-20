@@ -1,4 +1,5 @@
 ﻿using LUMO.Messenger.Models;
+using LUMO.Messenger.UWP.Models;
 using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Client.Options;
@@ -29,15 +30,19 @@ namespace LUMO.Messenger.UWP
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        private ObservableCollection<Message> Messages;
-
         private readonly string host = "pcfeib425t.vsb.cz";
         private readonly int port = 1883;
         private readonly string clientId = "MOR0157";
         private readonly string username = "mobilni";
         private readonly string password = "Systemy";
 
+        private ObservableCollection<Message> Messages;
+        private ObservableCollection<Contact> Contacts;
+        private ObservableCollection<Group> Groups;
+        
+        private Contact user;
         private IMqttClient mqttClient = new MqttFactory().CreateMqttClient();
+        private string currentTopic;
 
         public MainPage()
         {
@@ -47,7 +52,49 @@ namespace LUMO.Messenger.UWP
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            Messages = new ObservableCollection<Message>();
+            user = new Contact
+            {
+                Nickname = clientId,
+                Status = ContatStatus.Online
+            };
+
+            Messages = new ObservableCollection<Message>()
+            {
+                new Message
+                {
+                    Sender = new Contact
+                    {
+                        Nickname = "anon"
+                    },
+                    Content = "Hello",
+                    Created = DateTime.Parse(DateTime.Now.ToString("HH:mm:ss"))
+                }
+            };
+            Contacts = new ObservableCollection<Contact>()
+            {
+                new Contact
+                {
+                    Nickname = "franta",
+                    Status = ContatStatus.Online
+                },
+                new Contact
+                {
+                    Nickname = "pepa",
+                    Status = ContatStatus.Offline
+                },
+                new Contact
+                {
+                    Nickname = "lukas",
+                    Status = ContatStatus.Unknown
+                }
+            };
+            Groups = new ObservableCollection<Group>()
+            {
+                new Group
+                {
+                    Name = "All"
+                }
+            };
             IMqttClientOptions mqttOptions = new MqttClientOptionsBuilder()
                                                 .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V311)
                                                 .WithTcpServer(host, port)
@@ -72,7 +119,6 @@ namespace LUMO.Messenger.UWP
             try
             {
                 await mqttClient.ConnectAsync(mqttOptions);
-                await SendMessage("Test");
             }
             catch (Exception)
             {
@@ -82,12 +128,23 @@ namespace LUMO.Messenger.UWP
 
         private async Task SendMessage(string message)
         {
-            await mqttClient.PublishAsync($"/mschat/all/{clientId}", $"{message} Aktuální čas: {DateTime.Now:HH:mm:ss}");
+            MessageSend messageSend = new MessageSend
+            {
+                Content = message
+            };
+            await mqttClient.PublishAsync($"/mschat/all/{user.Nickname}", $"{messageSend.Content} Aktuální čas: {messageSend.Created:HH:mm:ss}");
+            Messages.Add(new Message
+            {
+                Sender = user,
+                Content = messageSend.Content,
+                Created = messageSend.Created
+            });
         }
 
         private void ReceiveMessage(string topic, byte[] payload)
         {
-            string[] formating = new string[2] { "undefined", "undefined" };
+            string undefined = "undefined";
+            string[] formating = new string[2] { undefined, undefined };
             int index = 0;
 
             foreach (string part in Encoding.UTF8.GetString(payload).Split("Aktuální čas: "))
@@ -95,15 +152,14 @@ namespace LUMO.Messenger.UWP
                 formating[index] = part;
                 index++;
             }
-
-            string user = topic.Split("/")[3];
-            Message message = new Message
+            /*
+            Messages.Add(new Message
             {
-                Sender = new Contact { Nickname = user },
+                Sender = new Contact { Nickname = topic.Split("/")[3] },
                 Content = formating[0],
-                Created = DateTime.Parse(formating[1])
-            };
-            Console.WriteLine($"{message.Sender.Nickname} {message.Created}: {message.Content}");
+                Created = formating[1] != undefined ? DateTime.Parse(formating[1]) : DateTime.Now
+            });
+            */
         }
     }
 }

@@ -125,6 +125,7 @@
     <Compile Include="Models\Contact.cs" />
     <Compile Include="Models\Group.cs" />
     <Compile Include="Models\Message.cs" />
+    <Compile Include="Models\MessageSend.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

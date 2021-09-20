@@ -25,7 +25,7 @@
                         <ColumnDefinition/>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Row="0" Grid.Column="0" FontSize="24" Padding="8" Foreground="{StaticResource PrimaryTextColor}" HorizontalAlignment="Center" Text="{x:Bind clientId}">Username</TextBlock>
+                    <TextBlock Grid.Row="0" Grid.Column="0" FontSize="24" Padding="8" Foreground="{StaticResource PrimaryTextColor}" HorizontalAlignment="Center" Text="{x:Bind user.Nickname}">Username</TextBlock>
                     <!--
                     <ComboBox Grid.Column="1" PlaceholderText="Unknown" VerticalAlignment="Center">
                         
@@ -83,14 +83,27 @@
                 <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
 
-            <ListView Grid.Row="0">
-                <ListView.Template>
-                    <ControlTemplate>
-                        <Grid>
+            <ListView Grid.Row="0" ItemsSource="{x:Bind Messages}">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid RowSpacing="8" Padding="16" CornerRadius="8" Background="{StaticResource SecondaryBackgroundColor}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
                             
+                            <Grid Grid.Row="0" ColumnSpacing="4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{Binding Sender.Nickname}" FontSize="12" Foreground="{StaticResource PrimaryTextColor}"/>
+                                <TextBlock Grid.Column="1" Text="{Binding GetCreatedString}" FontSize="12" Foreground="{StaticResource SecondaryTextColor}"/>
+                            </Grid>
+                            <TextBlock Grid.Row="1" Text="{Binding Content}" Foreground="{StaticResource PrimaryTextColor}"/>
                         </Grid>
-                    </ControlTemplate>
-                </ListView.Template>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
             </ListView>
 
             <Grid Grid.Row="1" ColumnSpacing="4" CornerRadius="8" Padding="8" Margin="0 8" Background="White">
