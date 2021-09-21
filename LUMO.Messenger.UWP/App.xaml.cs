@@ -176,6 +176,7 @@ namespace LUMO.Messenger.UWP
         private async void Disconected(MqttClientDisconnectedEventArgs args)
         {
             await ReconnectAsync(args.Reason);
+            Debug.WriteLine($"{DateTime.Now.ToShortTimeString()} disconnected.");
         }
 
         /// <summary>
