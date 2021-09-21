@@ -6,6 +6,7 @@ using MQTTnet.Client.Options;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -36,13 +37,14 @@ namespace LUMO.Messenger.UWP
         private readonly string username = "mobilni";
         private readonly string password = "Systemy";
 
-        private ObservableCollection<Message> Messages;
+        private ObservableCollection<MessageReceived> CurrentMessages;
         private ObservableCollection<Contact> Contacts;
         private ObservableCollection<Group> Groups;
-        
+        private Queue<MessageSend> MessageQueue = new Queue<MessageSend>();
+
         private Contact user;
         private IMqttClient mqttClient = new MqttFactory().CreateMqttClient();
-        private string currentTopic;
+        private string currentTopic = "all";
 
         public MainPage()
         {
@@ -58,9 +60,9 @@ namespace LUMO.Messenger.UWP
                 Status = ContatStatus.Online
             };
 
-            Messages = new ObservableCollection<Message>()
+            CurrentMessages = new ObservableCollection<MessageReceived>()
             {
-                new Message
+                new MessageReceived
                 {
                     Sender = new Contact
                     {
@@ -98,23 +100,33 @@ namespace LUMO.Messenger.UWP
             IMqttClientOptions mqttOptions = new MqttClientOptionsBuilder()
                                                 .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V311)
                                                 .WithTcpServer(host, port)
+                                                .WithCommunicationTimeout(TimeSpan.FromSeconds(6))
                                                 .WithClientId(clientId)
                                                 .WithCredentials(username, password)
                                                 .Build();
 
             mqttClient.UseDisconnectedHandler(cd =>
             {
-                Console.WriteLine($"{DateTime.Now.ToShortTimeString()} disconnected");
+                Debug.WriteLine($"{DateTime.Now.ToShortTimeString()} disconnected");
             });
             mqttClient.UseConnectedHandler(async cc =>
             {
-                Console.WriteLine(cc.AuthenticateResult.ResultCode);
-                Console.WriteLine($"{DateTime.Now.ToShortTimeString()} connected.");
-                await mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic("/mschat/all/#").Build());
+                Debug.WriteLine(cc.AuthenticateResult.ResultCode);
+                Debug.WriteLine($"{DateTime.Now.ToShortTimeString()} connected.");
+                await mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic("/mschat/#").Build());
             });
             mqttClient.UseApplicationMessageReceivedHandler(amr =>
             {
-                ReceiveMessage(amr.ApplicationMessage.Topic, amr.ApplicationMessage.Payload);
+                string topic = amr.ApplicationMessage.Topic;
+                switch (topic)
+                {
+                    case string message when message.Contains("/all") || message.Contains("/user"):
+                        ReceiveMessage(topic, amr.ApplicationMessage.Payload);
+                        break;
+                    case string status when status.Contains("/status"):
+                        UpdateStatus(topic, amr.ApplicationMessage.Payload);
+                        break;
+                }
             });
             try
             {
@@ -122,44 +134,108 @@ namespace LUMO.Messenger.UWP
             }
             catch (Exception)
             {
-
             }
         }
 
-        private async Task SendMessage(string message)
+        private async Task SendMessageAsync(string message)
         {
             MessageSend messageSend = new MessageSend
             {
+                Topic = $"/mschat/{currentTopic}/{user.Nickname}",
                 Content = message
             };
-            await mqttClient.PublishAsync($"/mschat/all/{user.Nickname}", $"{messageSend.Content} Aktuální čas: {messageSend.Created:HH:mm:ss}");
-            Messages.Add(new Message
+
+            try
+            {
+                foreach(MessageSend messageInQueue in MessageQueue)
+                {
+                    await SendMessageAsync(messageInQueue);
+                }
+                MessageQueue.Clear();
+
+                await SendMessageAsync(messageSend);
+            }
+            catch(Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                MessageQueue.Enqueue(messageSend);
+            }
+        }
+
+        private async Task SendMessageAsync(MessageSend message)
+        {
+            await mqttClient.PublishAsync(message.Topic, message.ToString(), true);
+            CurrentMessages.Add(new MessageReceived
             {
                 Sender = user,
-                Content = messageSend.Content,
-                Created = messageSend.Created
+                Content = message.Content,
+                Created = message.Created,
+                Orientation = "Right"
             });
         }
 
         private void ReceiveMessage(string topic, byte[] payload)
         {
-            string undefined = "undefined";
-            string[] formating = new string[2] { undefined, undefined };
-            int index = 0;
+            try
+            {
+                string undefined = "undefined";
+                string[] formating = new string[2] { undefined, undefined };
+                int index = 0;
 
-            foreach (string part in Encoding.UTF8.GetString(payload).Split("Aktuální čas: "))
-            {
-                formating[index] = part;
-                index++;
+                foreach (string part in Encoding.UTF8.GetString(payload).Split("Aktuální čas: "))
+                {
+                    formating[index] = part;
+                    index++;
+                }
+                MessageReceived newMessage = new MessageReceived
+                {
+                    Sender = new Contact { Nickname = topic.Split("/")[3] },
+                    Content = formating[0],
+                    Created = formating[1] != undefined ? DateTime.Parse(formating[1]) : DateTime.Now
+                };
+                Debug.WriteLine(newMessage.ToString());
+
+                if (topic.Contains("/all/"))
+                {
+                    Groups.FirstOrDefault(g => topic.Contains(g.Name)).Messages.Add(newMessage);
+                }
+                else if (topic.Contains("/user/"))
+                {
+                    Contacts.FirstOrDefault(c => topic.Contains(c.Nickname)).Messages.Add(newMessage);
+                }
+
+                /*
+                Messages.Add(newMessage);
+                */
             }
-            /*
-            Messages.Add(new Message
+            catch (Exception ex)
             {
-                Sender = new Contact { Nickname = topic.Split("/")[3] },
-                Content = formating[0],
-                Created = formating[1] != undefined ? DateTime.Parse(formating[1]) : DateTime.Now
-            });
-            */
+                Debug.WriteLine(ex.Message);
+            }
+        }
+
+        private void UpdateStatus(string topic, byte[] payload)
+        {
+            string[] topicArray = topic.Split("/");
+            Contact contactToUpdate = Contacts.FirstOrDefault(c => c.Nickname.Equals(topicArray[3]));
+            if(contactToUpdate != null)
+            {
+                contactToUpdate.Status = (ContatStatus)Enum.Parse(typeof(ContatStatus), Encoding.UTF8.GetString(payload), true);
+            }
+            else
+            {
+                Contacts.Add(new Contact()
+                {
+                    Nickname = topicArray[3],
+                    Status = (ContatStatus)Enum.Parse(typeof(ContatStatus), Encoding.UTF8.GetString(payload), true)
+                });
+            }
+        }
+
+        private async void SendButton_Click(object sender, RoutedEventArgs e)
+        {
+            await SendMessageAsync(SendText.Text);
+            SendText.Text = "";
         }
     }
 }

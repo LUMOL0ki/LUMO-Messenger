@@ -13,7 +13,13 @@ namespace LUMO.Messenger.UWP.Models
             Created = DateTime.Now;
         }
 
+        public string Topic { get; set; }
         public string Content {  get; set; }
         public DateTime Created { get; }
+
+        public override string ToString()
+        {
+            return $"{Content} Aktuální čas: {Created:HH:mm:ss}";
+        }
     }
 }

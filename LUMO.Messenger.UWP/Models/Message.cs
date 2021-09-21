@@ -8,5 +8,10 @@ namespace LUMO.Messenger.Models
         public string Content { get; set; }
         public DateTime Created { get; set; }
         public string GetCreatedString => Created.ToString("HH:mm:ss");
+
+        public override string ToString()
+        {
+            return $"{Sender} {GetCreatedString}: {Content}";
+        }
     }
 }
