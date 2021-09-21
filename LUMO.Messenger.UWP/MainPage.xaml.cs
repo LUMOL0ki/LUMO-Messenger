@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -33,10 +34,10 @@ namespace LUMO.Messenger.UWP
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        private ObservableCollection<MessageReceived> CurrentMessages;
-        private ObservableCollection<Contact> Contacts;
-        private ObservableCollection<Group> Groups;
-        private readonly Queue<MessageSend> MessageQueue = new Queue<MessageSend>();
+        private ObservableCollection<MessageReceived> currentMessages;
+        private ObservableCollection<Contact> contacts;
+        private ObservableCollection<Group> groups;
+        private readonly Queue<MessageSend> messageQueue = new Queue<MessageSend>();
 
         private Contact user;
         private IMqttClient mqttClient;
@@ -70,25 +71,8 @@ namespace LUMO.Messenger.UWP
                 }
             };
             */
-            Contacts = new ObservableCollection<Contact>()
-            {
-                new Contact
-                {
-                    Nickname = "franta",
-                    Status = ContatStatus.Online
-                },
-                new Contact
-                {
-                    Nickname = "pepa",
-                    Status = ContatStatus.Offline
-                },
-                new Contact
-                {
-                    Nickname = "lukas",
-                    Status = ContatStatus.Unknown
-                }
-            };
-            Groups = new ObservableCollection<Group>()
+            contacts = new ObservableCollection<Contact>();
+            groups = new ObservableCollection<Group>()
             {
                 new Group
                 {
@@ -96,18 +80,8 @@ namespace LUMO.Messenger.UWP
                 }
             };
 
-            CurrentMessages = Groups[0].Messages;
+            currentMessages = groups[0].Messages;
             
-            mqttClient.UseDisconnectedHandler(cd =>
-            {
-                Debug.WriteLine($"{DateTime.Now.ToShortTimeString()} disconnected");
-            });
-            mqttClient.UseConnectedHandler(async cc =>
-            {
-                Debug.WriteLine(cc.AuthenticateResult.ResultCode);
-                Debug.WriteLine($"{DateTime.Now.ToShortTimeString()} connected.");
-                await mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic("/mschat/#").Build());
-            });
             mqttClient.UseApplicationMessageReceivedHandler(async amr =>
             {
                 string topic = amr.ApplicationMessage.Topic;
@@ -143,59 +117,81 @@ namespace LUMO.Messenger.UWP
 
             try
             {
-                foreach(MessageSend messageInQueue in MessageQueue)
+                foreach(MessageSend messageInQueue in messageQueue)
                 {
                     await SendMessageAsync(messageInQueue);
                 }
-                MessageQueue.Clear();
+                messageQueue.Clear();
 
                 await SendMessageAsync(messageSend);
             }
             catch(Exception ex)
             {
                 Debug.WriteLine(ex.Message);
-                MessageQueue.Enqueue(messageSend);
+                messageQueue.Enqueue(messageSend);
             }
         }
 
         private async Task SendMessageAsync(MessageSend message)
         {
             await mqttClient.PublishAsync(message.Topic, message.ToString(), true);
+            if (message.Topic.Contains("user") && !message.Topic.Contains($"user/{user.Nickname}"))
+            {
+                currentMessages.Add(new MessageReceived
+                {
+                    Sender = user,
+                    Content = message.Content,
+                    Created = message.Created,
+                    Orientation = MessageOrientation.Right
+                });
+            }
         }
 
         private async Task ReceiveMessageAsync(string topic, byte[] payload)
         {
+            string sender = topic.Split("/").Last();
+            string[] payloadParts = new string[2];
+            int index = 0;
+
+            foreach (string part in Encoding.UTF8.GetString(payload).Split("Aktuální čas: "))
+            {
+                payloadParts[index] = part;
+                index++;
+            }
+
             try
             {
-                string sender = topic.Split("/")[3];
-                string[] payloadParts = new string[2];
-                int index = 0;
-
-                foreach (string part in Encoding.UTF8.GetString(payload).Split("Aktuální čas: "))
-                {
-                    payloadParts[index] = part;
-                    index++;
-                }
-
-                MessageReceived newMessage = new MessageReceived
-                {
-                    Sender = new Contact { Nickname = sender },
-                    Content = payloadParts[0],
-                    Created = payloadParts[1] != null ? DateTime.Parse(payloadParts[1]) : DateTime.Now,
-                    Orientation = user.Nickname.Equals(sender) ? MessageOrientation.Right : MessageOrientation.Left
-                };
-
-                Debug.WriteLine(newMessage.ToString());
-
                 await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                 {
+                    MessageReceived newMessage = new MessageReceived
+                    {
+                        Sender = new Contact { Nickname = sender },
+                        Content = payloadParts[0],
+                        Created = payloadParts[1] != null ? DateTime.Parse(payloadParts[1]) : DateTime.Now,
+                        Orientation = user.Nickname.Equals(sender) ? MessageOrientation.Right : MessageOrientation.Left
+                    };
+
+                    
+
+                    Debug.WriteLine(newMessage.ToString());
+
                     if (topic.Contains("/all/"))
                     {
-                        Groups.FirstOrDefault(g => topic.Contains(g.Name)).Messages.Add(newMessage);
+                        groups.FirstOrDefault(g => topic.Contains(g.Name)).Messages.Add(newMessage);
                     }
                     else if (topic.Contains("/user/"))
                     {
-                        Contacts.FirstOrDefault(c => topic.Contains(c.Nickname)).Messages.Add(newMessage);
+                        Debug.WriteLine(topic);
+                        Contact contact = contacts.FirstOrDefault(c => sender.Equals(c.Nickname));
+                        if(contact == null)
+                        {
+                            contacts.Add(new Contact
+                            {
+                                Nickname = sender
+                            });
+                            contact = contacts.Last();
+                        }
+                        contact.Messages.Add(newMessage);
                     }
                     /*
                     Messages.Add(newMessage);
@@ -214,31 +210,54 @@ namespace LUMO.Messenger.UWP
             string payloadText = Encoding.UTF8.GetString(payload);
             string[] payloadParts = payloadText.Split(" ");
 
-            Contact contactToUpdate = Contacts.FirstOrDefault(c => c.Nickname.Equals(topicArray[3]));
+            Contact contactToUpdate = contacts.FirstOrDefault(c => c.Nickname.Equals(topicArray[3]));
+
             if(contactToUpdate != null)
             {
                 await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                 {
-                    contactToUpdate.SetStatus(payloadParts.Count() > 1 ? payloadParts[1] : payloadParts[0]);
+                    contactToUpdate.SetStatus(payloadParts.Count() > 1 ? payloadParts.Last() : payloadParts[0]);
                 });
             }
             else
             {
                 await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                 {
-                    Contacts.Add(new Contact()
+                    contactToUpdate = new Contact()
                     {
-                        Nickname = topicArray[3],
-                        Status = (ContatStatus)Enum.Parse(typeof(ContatStatus), payloadParts.Count() > 1 ? payloadParts[1] : payloadParts[0], true)
-                    });
+                        Nickname = topicArray[3]
+                    };
+                    contactToUpdate.SetStatus(payloadParts.Count() > 1 ? payloadParts.Last() : payloadParts[0]);
+                    contacts.Add(contactToUpdate);
                 });
             }
         }
 
         private async void SendButton_Click(object sender, RoutedEventArgs e)
         {
-            await SendMessageAsync(SendText.Text);
-            SendText.Text = "";
+            if(SendText.Text != "")
+            {
+                await SendMessageAsync(SendText.Text);
+                SendText.Text = "";
+            }
+        }
+
+        private void groupList_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            //(contactList.ContainerFromItem(e.ClickedItem) as ListViewItem).IsSelected = false;
+            Group clickedGroup = e.ClickedItem as Group;
+            currentMessages = clickedGroup.Messages;
+            messageReceiveList.ItemsSource = currentMessages;
+            currentTopic = clickedGroup.Name;
+        }
+
+        private void contactList_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            Contact clickedContact = e.ClickedItem as Contact;
+            currentMessages = clickedContact.Messages;
+            messageReceiveList.ItemsSource = currentMessages;
+            currentTopic = $"user/{clickedContact.Nickname}";
+            Debug.WriteLine(currentTopic);
         }
     }
 }

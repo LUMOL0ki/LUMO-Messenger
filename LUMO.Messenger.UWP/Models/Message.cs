@@ -7,11 +7,11 @@ namespace LUMO.Messenger.Models
         public Contact Sender { get; set; }
         public string Content { get; set; }
         public DateTime Created { get; set; }
-        public string GetCreatedString => Created.ToString("HH:mm:ss");
+        public string CreatedText => Created.ToString("HH:mm:ss");
 
         public override string ToString()
         {
-            return $"{Sender} {GetCreatedString}: {Content}";
+            return $"{Sender} {CreatedText}: {Content}";
         }
     }
 }

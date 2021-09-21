@@ -1,6 +1,8 @@
 ﻿using LUMO.Messenger.Models;
 using MQTTnet;
 using MQTTnet.Client;
+using MQTTnet.Client.Connecting;
+using MQTTnet.Client.Disconnecting;
 using MQTTnet.Client.Options;
 using System;
 using System.Collections.Generic;
@@ -8,6 +10,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
@@ -90,17 +93,34 @@ namespace LUMO.Messenger.UWP
                 Nickname = clientId,
                 Status = ContatStatus.Online
             };
-            
+
             IMqttClientOptions mqttOptions = new MqttClientOptionsBuilder()
                                                 .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V311)
                                                 .WithTcpServer(host, port)
-                                                .WithCommunicationTimeout(TimeSpan.FromSeconds(6))
+                                                .WithKeepAlivePeriod(TimeSpan.FromSeconds(60))
+                                                .WithCommunicationTimeout(TimeSpan.FromSeconds(3))
                                                 .WithClientId(clientId)
                                                 .WithCredentials(username, password)
+                                                .WithWillDelayInterval(60)
+                                                .WithWillMessage(new MqttApplicationMessage
+                                                {
+                                                    Topic = $"/mschat/status/{user.Nickname}",
+                                                    Payload = Encoding.UTF8.GetBytes("offline"),
+                                                    Retain = true
+                                                })
                                                 .Build();
 
             try
             {
+                mqttClient.UseConnectedHandler(async cc =>
+                {
+                    Debug.WriteLine(cc.AuthenticateResult.ResultCode);
+                    Debug.WriteLine($"{DateTime.Now.ToShortTimeString()} connected.");
+                    await mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic("/mschat/#").Build());
+                });
+
+                mqttClient.DisconnectedHandler = new MqttClientDisconnectedHandlerDelegate(Disconected);
+
                 await mqttClient.ConnectAsync(mqttOptions);
                 await SetStatusAsync(ContatStatus.Online);
             }
@@ -126,6 +146,38 @@ namespace LUMO.Messenger.UWP
             await mqttClient.PublishAsync($"/mschat/status/{user.Nickname}", status.ToString().ToLower(), true);
         }
 
+        private async Task ReconnectAsync(MqttClientDisconnectReason disconnectReason)
+        {
+            try
+            {
+                await Task.Delay(TimeSpan.FromSeconds(5));
+                switch (disconnectReason)
+                {
+                    case MqttClientDisconnectReason.KeepAliveTimeout:
+                        await mqttClient.ReconnectAsync();
+                        await SetStatusAsync(ContatStatus.Online);
+                        break;
+                    case MqttClientDisconnectReason.DisconnectWithWillMessage:
+                        await mqttClient.ReconnectAsync();
+                        await SetStatusAsync(ContatStatus.Online);
+                        break;
+                    case MqttClientDisconnectReason.ServerBusy:
+                        await mqttClient.ReconnectAsync();
+                        await SetStatusAsync(ContatStatus.Online);
+                        break;
+                }
+            }
+            catch (Exception)
+            {
+                await ReconnectAsync(disconnectReason);
+            }
+        }
+
+        private async void Disconected(MqttClientDisconnectedEventArgs args)
+        {
+            await ReconnectAsync(args.Reason);
+        }
+
         /// <summary>
         /// Invoked when application execution is being suspended.  Application state is saved
         /// without knowing whether the application will be terminated or resumed with the contents
@@ -138,6 +190,11 @@ namespace LUMO.Messenger.UWP
             try
             {
                 await SetStatusAsync(ContatStatus.Offline);
+                await mqttClient.DisconnectAsync(new MQTTnet.Client.Disconnecting.MqttClientDisconnectOptions()
+                {
+                    ReasonCode = MQTTnet.Client.Disconnecting.MqttClientDisconnectReason.NormalDisconnection,
+                }, 
+                System.Threading.CancellationToken.None);
             }
             catch(Exception ex)
             {

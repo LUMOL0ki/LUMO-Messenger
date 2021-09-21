@@ -36,11 +36,11 @@
                 <Grid Grid.Row="1" CornerRadius="4" Margin="8" Background="{StaticResource PrimaryBackgroundColor}">
                     <Grid.Resources>
                         <ResourceDictionary>
-                            <ResourceDictionary.ThemeDictionaries>
-                                <ResourceDictionary x:Key="Dark">
+                            <ResourceDictionary.MergedDictionaries>
+                                <ResourceDictionary>
                                     <SolidColorBrush x:Key="GridBackgroundPointerOver" Color="{StaticResource SecondaryButtonHoverColor}"/>
                                 </ResourceDictionary>
-                            </ResourceDictionary.ThemeDictionaries>
+                            </ResourceDictionary.MergedDictionaries>
                         </ResourceDictionary>
                     </Grid.Resources>
                     <Grid.ColumnDefinitions>
@@ -51,8 +51,8 @@
                     <TextBox x:Name="SearchText" Grid.Column="1" PlaceholderText="Search..." BorderThickness="0" Padding="4 8" Background="{x:Null}" VerticalAlignment="Stretch" Foreground="{StaticResource PrimaryTextColor}" FocusVisualSecondaryBrush="{x:Null}">
                         <TextBox.Resources>
                             <ResourceDictionary>
-                                <ResourceDictionary.ThemeDictionaries>
-                                    <ResourceDictionary x:Key="Dark">
+                                <ResourceDictionary.MergedDictionaries>
+                                    <ResourceDictionary>
                                         <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="{StaticResource PrimaryTextColor}"/>
                                         <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="Transparent"/>
                                         <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="Transparent"/>
@@ -62,7 +62,7 @@
                                         <SolidColorBrush x:Key="TextControlButtonForegroundPressed" Color="{StaticResource PrimaryTextColor}"/>
                                         <SolidColorBrush x:Key="TextControlButtonBackgroundPressed" Color="{StaticResource SecondaryButtonActiveColor}"/>
                                     </ResourceDictionary>
-                                </ResourceDictionary.ThemeDictionaries>
+                                </ResourceDictionary.MergedDictionaries>
                             </ResourceDictionary>
                         </TextBox.Resources>
                         <TextBox.PlaceholderForeground>
@@ -71,21 +71,26 @@
                     </TextBox>
                 </Grid>
 
-                <ListView Grid.Row="2" SelectionMode="None" IsItemClickEnabled="False">
+                <ListView x:Name="groupList" Grid.Row="2" SelectionMode="None" IsItemClickEnabled="False">
                     <ListViewHeaderItem Foreground="{StaticResource PrimaryTextColor}">Groups</ListViewHeaderItem>
                     <ListViewItem HorizontalContentAlignment="Stretch">
-                        <ListView ItemsSource="{x:Bind Groups}">
+                        <ListView ItemsSource="{x:Bind groups}" IsItemClickEnabled="True" ItemClick="groupList_ItemClick">
                             <ListView.ItemTemplate>
                                 <DataTemplate>
-                                    <ListViewItem HorizontalContentAlignment="Stretch" Foreground="{StaticResource PrimaryTextColor}">
+                                    <ListViewItem x:Name="groupList" HorizontalContentAlignment="Stretch" Foreground="{StaticResource PrimaryTextColor}">
                                         <ListViewItem.Resources>
                                             <ResourceDictionary>
                                                 <ResourceDictionary.MergedDictionaries>
-                                                    <ResourceDictionary x:Key="Dark">
+                                                    <ResourceDictionary>
                                                         <SolidColorBrush x:Key="ListViewItemForegroundPointerOver" Color="{StaticResource PrimaryTextColor}"/>
                                                         <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="{StaticResource SecondaryButtonHoverColor}"/>
+                                                        <SolidColorBrush x:Key="ListViewItemForegroundPressed" Color="{StaticResource PrimaryTextColor}"/>
+                                                        <SolidColorBrush x:Key="ListViewItemBackgroundPressed" Color="{StaticResource SecondaryButtonActiveColor}"/>
                                                         <CornerRadius x:Key="ListViewItemCornerRadius">4</CornerRadius>
+                                                        <SolidColorBrush x:Key="ListViewItemForegroundSelected" Color="{StaticResource PrimaryTextColor}"/>
                                                         <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="{StaticResource SecondaryButtonActiveColor}"/>
+                                                        <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPointerOver" Color="{StaticResource SecondaryButtonHoverColor}"/>
+                                                        <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPressed" Color="{StaticResource SecondaryButtonActiveColor}"/>
                                                     </ResourceDictionary>
                                                 </ResourceDictionary.MergedDictionaries>
                                             </ResourceDictionary>
@@ -95,7 +100,7 @@
                                                 <ColumnDefinition/>
                                                 <ColumnDefinition Width="auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0" Text="{Binding Name}">Group name</TextBlock>
+                                            <TextBlock Grid.Column="0" Text="{Binding Name}" FontWeight="SemiBold">Group name</TextBlock>
                                             <FontIcon Grid.Column="1" Glyph="&#xe8bd;"/>
                                         </Grid>
                                     </ListViewItem>
@@ -105,10 +110,26 @@
                     </ListViewItem>
                     <ListViewHeaderItem Foreground="{StaticResource PrimaryTextColor}">Contacts</ListViewHeaderItem>
                     <ListViewItem HorizontalContentAlignment="Stretch">
-                        <ListView ItemsSource="{x:Bind Contacts}">
+                        <ListView x:Name="contactList" ItemsSource="{x:Bind contacts}" IsItemClickEnabled="True" ItemClick="contactList_ItemClick">
                             <ListView.ItemTemplate>
                                 <DataTemplate>
-                                    <ListViewItem Foreground="{StaticResource PrimaryTextColor}" HorizontalContentAlignment="Stretch">
+                                    <ListViewItem x:Name="contactList" Foreground="{StaticResource PrimaryTextColor}" HorizontalContentAlignment="Stretch">
+                                        <ListViewItem.Resources>
+                                            <ResourceDictionary>
+                                                <ResourceDictionary.MergedDictionaries>
+                                                    <ResourceDictionary>
+                                                        <SolidColorBrush x:Key="ListViewItemForegroundPointerOver" Color="{StaticResource PrimaryTextColor}"/>
+                                                        <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="{StaticResource SecondaryButtonHoverColor}"/>
+                                                        <SolidColorBrush x:Key="ListViewItemForegroundPressed" Color="{StaticResource PrimaryTextColor}"/>
+                                                        <SolidColorBrush x:Key="ListViewItemBackgroundPressed" Color="{StaticResource SecondaryButtonActiveColor}"/>
+                                                        <SolidColorBrush x:Key="ListViewItemForegroundSelected" Color="{StaticResource PrimaryTextColor}"/>
+                                                        <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="{StaticResource SecondaryButtonActiveColor}"/>
+                                                        <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPointerOver" Color="{StaticResource SecondaryButtonHoverColor}"/>
+                                                        <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPressed" Color="{StaticResource SecondaryButtonActiveColor}"/>
+                                                    </ResourceDictionary>
+                                                </ResourceDictionary.MergedDictionaries>
+                                            </ResourceDictionary>
+                                        </ListViewItem.Resources>
                                         <Grid ColumnSpacing="8">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition/>
@@ -124,8 +145,8 @@
                                                         <ColumnDefinition Width="auto"/>
                                                         <ColumnDefinition Width="auto"/>
                                                     </Grid.ColumnDefinitions>
-                                                    <TextBlock Grid.Column="0" Text="{Binding Nickname}">Name</TextBlock>
-                                                    <Ellipse Grid.Column="1" Height="8" Width="8" Fill="{StaticResource UnknownStatusColor}"></Ellipse>
+                                                    <TextBlock Grid.Column="0" Text="{Binding Nickname}" FontWeight="SemiBold">Name</TextBlock>
+                                                    <Ellipse Grid.Column="1" Height="8" Width="8" Fill="{Binding StatusColor}"></Ellipse>
                                                 </Grid>
                                                 <TextBlock Grid.Row="1" Text="{Binding LastMessage.Content}">Last message...</TextBlock>
                                             </Grid>
@@ -145,7 +166,7 @@
                 <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
 
-            <ListView x:Name="MessageReceiveText" Grid.Row="0" SelectionMode="None" IsItemClickEnabled="False" ItemsSource="{x:Bind CurrentMessages}">
+            <ListView x:Name="messageReceiveList" Grid.Row="0" SelectionMode="None" IsItemClickEnabled="False" ItemsSource="{x:Bind currentMessages}">
                 <ListView.ItemsPanel>
                     <ItemsPanelTemplate>
                         <ItemsStackPanel ItemsUpdatingScrollMode="KeepLastItemInView" />
@@ -154,7 +175,7 @@
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <ListViewItem HorizontalContentAlignment="{Binding OrientationText}">
-                            <Grid RowSpacing="8" Margin="0 8" Padding="16" CornerRadius="8" Background="{StaticResource SecondaryBackgroundColor}">
+                            <Grid RowSpacing="8" Margin="0 8" Padding="16" CornerRadius="8" MaxWidth="600" Background="{Binding Background}">
                                 <Grid.RowDefinitions>
                                     <RowDefinition/>
                                     <RowDefinition/>
@@ -168,7 +189,7 @@
                                     <TextBlock Grid.Column="0" Text="{Binding Sender.Nickname}" FontSize="12" Foreground="{StaticResource PrimaryTextColor}"/>
                                     <TextBlock Grid.Column="1" Text="{Binding CreatedText}" FontSize="12" Foreground="{StaticResource SecondaryTextColor}"/>
                                 </Grid>
-                                <TextBlock Grid.Row="1" Text="{Binding Content}" Foreground="{StaticResource PrimaryTextColor}"/>
+                                <TextBlock Grid.Row="1" Text="{Binding Content}" TextWrapping="Wrap" Foreground="{StaticResource PrimaryTextColor}"/>
                             </Grid>
                         </ListViewItem>
                     </DataTemplate>
@@ -181,15 +202,15 @@
                     <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBox x:Name="SendText" BorderThickness="0" PlaceholderText="Write message..." Padding="16 8" CornerRadius="4" VerticalContentAlignment="Center" VerticalAlignment="Stretch" Background="{x:Null}">
+                <TextBox x:Name="SendText" BorderThickness="0" PlaceholderText="Write message..." TextWrapping="Wrap" Padding="16 8" CornerRadius="4" VerticalContentAlignment="Center" VerticalAlignment="Stretch" Background="{x:Null}">
                     <TextBox.Resources>
                         <ResourceDictionary>
-                            <ResourceDictionary.ThemeDictionaries>
-                                <ResourceDictionary x:Key="Dark">
+                            <ResourceDictionary.MergedDictionaries>
+                                <ResourceDictionary>
                                     <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="{StaticResource PrimaryTextColor}"/>
                                     <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="Transparent"/>
                                 </ResourceDictionary>
-                            </ResourceDictionary.ThemeDictionaries>
+                            </ResourceDictionary.MergedDictionaries>
                         </ResourceDictionary>
                     </TextBox.Resources>
                     <TextBox.Foreground>
@@ -202,13 +223,13 @@
                 <Button x:Name="SendButton"  Grid.Column="2" Width="72" VerticalAlignment="Stretch" BorderThickness="0" CornerRadius="4" Padding="16 8" Foreground="{StaticResource PrimaryTextColor}" FocusVisualSecondaryBrush="{StaticResource PrimaryButtonActiveColor}" FocusVisualPrimaryBrush="{StaticResource PrimaryButtonHoverColor}" Click="SendButton_Click">
                     <Button.Resources>
                         <ResourceDictionary>
-                            <ResourceDictionary.ThemeDictionaries>
-                                <ResourceDictionary x:Key="Dark">
+                            <ResourceDictionary.MergedDictionaries>
+                                <ResourceDictionary>
                                     <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="{StaticResource PrimaryTextColor}"/>
                                     <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="{StaticResource PrimaryButtonHoverColor}"/>
                                     <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="{StaticResource PrimaryButtonActiveColor}"/>
                                 </ResourceDictionary>
-                            </ResourceDictionary.ThemeDictionaries>
+                            </ResourceDictionary.MergedDictionaries>
                         </ResourceDictionary>
                     </Button.Resources>
                     <Button.Background>
