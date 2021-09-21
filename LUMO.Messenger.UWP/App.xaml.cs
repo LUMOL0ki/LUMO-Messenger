@@ -1,8 +1,14 @@
-﻿using System;
+﻿using LUMO.Messenger.Models;
+using MQTTnet;
+using MQTTnet.Client;
+using MQTTnet.Client.Options;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
@@ -22,6 +28,15 @@ namespace LUMO.Messenger.UWP
     /// </summary>
     sealed partial class App : Application
     {
+        private readonly string host = "pcfeib425t.vsb.cz";
+        private readonly int port = 1883;
+        private readonly string clientId = "MOR0157";
+        private readonly string username = "mobilni";
+        private readonly string password = "Systemy";
+
+        public Contact user;
+        public IMqttClient mqttClient = new MqttFactory().CreateMqttClient();
+
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -37,13 +52,11 @@ namespace LUMO.Messenger.UWP
         /// will be used such as when the application is launched to open a specific file.
         /// </summary>
         /// <param name="e">Details about the launch request and process.</param>
-        protected override void OnLaunched(LaunchActivatedEventArgs e)
+        protected override async void OnLaunched(LaunchActivatedEventArgs e)
         {
-            Frame rootFrame = Window.Current.Content as Frame;
-
             // Do not repeat app initialization when the Window already has content,
             // just ensure that the window is active
-            if (rootFrame == null)
+            if (!(Window.Current.Content is Frame rootFrame))
             {
                 // Create a Frame to act as the navigation context and navigate to the first page
                 rootFrame = new Frame();
@@ -71,6 +84,30 @@ namespace LUMO.Messenger.UWP
                 // Ensure the current window is active
                 Window.Current.Activate();
             }
+
+            user = new Contact
+            {
+                Nickname = clientId,
+                Status = ContatStatus.Online
+            };
+            
+            IMqttClientOptions mqttOptions = new MqttClientOptionsBuilder()
+                                                .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V311)
+                                                .WithTcpServer(host, port)
+                                                .WithCommunicationTimeout(TimeSpan.FromSeconds(6))
+                                                .WithClientId(clientId)
+                                                .WithCredentials(username, password)
+                                                .Build();
+
+            try
+            {
+                await mqttClient.ConnectAsync(mqttOptions);
+                await SetStatusAsync(ContatStatus.Online);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
         }
 
         /// <summary>
@@ -83,6 +120,12 @@ namespace LUMO.Messenger.UWP
             throw new Exception("Failed to load Page " + e.SourcePageType.FullName);
         }
 
+        private async Task SetStatusAsync(ContatStatus status)
+        {
+            Debug.WriteLine(status.ToString().ToLower());
+            await mqttClient.PublishAsync($"/mschat/status/{user.Nickname}", status.ToString().ToLower(), true);
+        }
+
         /// <summary>
         /// Invoked when application execution is being suspended.  Application state is saved
         /// without knowing whether the application will be terminated or resumed with the contents
@@ -90,8 +133,17 @@ namespace LUMO.Messenger.UWP
         /// </summary>
         /// <param name="sender">The source of the suspend request.</param>
         /// <param name="e">Details about the suspend request.</param>
-        private void OnSuspending(object sender, SuspendingEventArgs e)
+        private async void OnSuspending(object sender, SuspendingEventArgs e)
         {
+            try
+            {
+                await SetStatusAsync(ContatStatus.Offline);
+            }
+            catch(Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
+
             var deferral = e.SuspendingOperation.GetDeferral();
             //TODO: Save application state and stop any background activity
             deferral.Complete();

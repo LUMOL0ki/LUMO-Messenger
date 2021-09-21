@@ -7,6 +7,6 @@ namespace LUMO.Messenger.Models
     public class Group
     {
         public string Name { get; set; }
-        public ICollection<MessageReceived> Messages { get; set; } = new ObservableCollection<MessageReceived>();
+        public ObservableCollection<MessageReceived> Messages { get; set; } = new ObservableCollection<MessageReceived>();
     }
 }

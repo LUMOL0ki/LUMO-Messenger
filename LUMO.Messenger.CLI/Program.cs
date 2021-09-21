@@ -45,8 +45,6 @@ while (true)
 
 }
 
-await mqttClient.DisconnectAsync();
-
 //await mqttClient.PublishAsync("/mschat/all/#", "test");
 
 async Task SendMessage(string message)

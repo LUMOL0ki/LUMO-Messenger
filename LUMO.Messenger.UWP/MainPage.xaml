@@ -78,6 +78,18 @@
                             <ListView.ItemTemplate>
                                 <DataTemplate>
                                     <ListViewItem HorizontalContentAlignment="Stretch" Foreground="{StaticResource PrimaryTextColor}">
+                                        <ListViewItem.Resources>
+                                            <ResourceDictionary>
+                                                <ResourceDictionary.MergedDictionaries>
+                                                    <ResourceDictionary x:Key="Dark">
+                                                        <SolidColorBrush x:Key="ListViewItemForegroundPointerOver" Color="{StaticResource PrimaryTextColor}"/>
+                                                        <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="{StaticResource SecondaryButtonHoverColor}"/>
+                                                        <CornerRadius x:Key="ListViewItemCornerRadius">4</CornerRadius>
+                                                        <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="{StaticResource SecondaryButtonActiveColor}"/>
+                                                    </ResourceDictionary>
+                                                </ResourceDictionary.MergedDictionaries>
+                                            </ResourceDictionary>
+                                        </ListViewItem.Resources>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition/>
@@ -134,9 +146,14 @@
             </Grid.RowDefinitions>
 
             <ListView x:Name="MessageReceiveText" Grid.Row="0" SelectionMode="None" IsItemClickEnabled="False" ItemsSource="{x:Bind CurrentMessages}">
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <ItemsStackPanel ItemsUpdatingScrollMode="KeepLastItemInView" />
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <ListViewItem HorizontalContentAlignment="{Binding Orientation}">
+                        <ListViewItem HorizontalContentAlignment="{Binding OrientationText}">
                             <Grid RowSpacing="8" Margin="0 8" Padding="16" CornerRadius="8" Background="{StaticResource SecondaryBackgroundColor}">
                                 <Grid.RowDefinitions>
                                     <RowDefinition/>
@@ -149,7 +166,7 @@
                                         <ColumnDefinition/>
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Column="0" Text="{Binding Sender.Nickname}" FontSize="12" Foreground="{StaticResource PrimaryTextColor}"/>
-                                    <TextBlock Grid.Column="1" Text="{Binding GetCreatedString}" FontSize="12" Foreground="{StaticResource SecondaryTextColor}"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding CreatedText}" FontSize="12" Foreground="{StaticResource SecondaryTextColor}"/>
                                 </Grid>
                                 <TextBlock Grid.Row="1" Text="{Binding Content}" Foreground="{StaticResource PrimaryTextColor}"/>
                             </Grid>
