@@ -40,7 +40,7 @@ namespace LUMO.Messenger.Models
             }
         }
 
-        public void SetStatus(string status)
+        public void SetStatusFromString(string status)
         {
             Status = (ContatStatus)Enum.Parse(typeof(ContatStatus), status, true);
         }

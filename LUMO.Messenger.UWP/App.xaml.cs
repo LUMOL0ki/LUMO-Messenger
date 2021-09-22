@@ -1,4 +1,6 @@
 ﻿using LUMO.Messenger.Models;
+using LUMO.Messenger.UWP.Clients;
+using LUMO.Messenger.UWP.Factories;
 using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Client.Connecting;
@@ -38,7 +40,7 @@ namespace LUMO.Messenger.UWP
         private readonly string password = "Systemy";
 
         public Contact user;
-        public IMqttClient mqttClient = new MqttFactory().CreateMqttClient();
+        public MessengerClient messengerClient;
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -57,6 +59,20 @@ namespace LUMO.Messenger.UWP
         /// <param name="e">Details about the launch request and process.</param>
         protected override async void OnLaunched(LaunchActivatedEventArgs e)
         {
+            user = new Contact
+            {
+                Nickname = clientId,
+                Status = ContatStatus.Online
+            };
+
+            messengerClient = new MessengerClient();
+            messengerClient.Host = host;
+            messengerClient.Port = port;
+            messengerClient.ClientId = clientId;
+            messengerClient.User = user;
+            messengerClient.Username = username;
+            messengerClient.Password = password;
+
             // Do not repeat app initialization when the Window already has content,
             // just ensure that the window is active
             if (!(Window.Current.Content is Frame rootFrame))
@@ -87,47 +103,6 @@ namespace LUMO.Messenger.UWP
                 // Ensure the current window is active
                 Window.Current.Activate();
             }
-
-            user = new Contact
-            {
-                Nickname = clientId,
-                Status = ContatStatus.Online
-            };
-
-            IMqttClientOptions mqttOptions = new MqttClientOptionsBuilder()
-                                                .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V311)
-                                                .WithTcpServer(host, port)
-                                                .WithKeepAlivePeriod(TimeSpan.FromSeconds(60))
-                                                .WithCommunicationTimeout(TimeSpan.FromSeconds(3))
-                                                .WithClientId(clientId)
-                                                .WithCredentials(username, password)
-                                                .WithWillDelayInterval(60)
-                                                .WithWillMessage(new MqttApplicationMessage
-                                                {
-                                                    Topic = $"/mschat/status/{user.Nickname}",
-                                                    Payload = Encoding.UTF8.GetBytes("offline"),
-                                                    Retain = true
-                                                })
-                                                .Build();
-
-            try
-            {
-                mqttClient.UseConnectedHandler(async cc =>
-                {
-                    Debug.WriteLine(cc.AuthenticateResult.ResultCode);
-                    Debug.WriteLine($"{DateTime.Now.ToShortTimeString()} connected.");
-                    await mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic("/mschat/#").Build());
-                });
-
-                mqttClient.DisconnectedHandler = new MqttClientDisconnectedHandlerDelegate(Disconected);
-
-                await mqttClient.ConnectAsync(mqttOptions);
-                await SetStatusAsync(ContatStatus.Online);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.Message);
-            }
         }
 
         /// <summary>
@@ -138,45 +113,6 @@ namespace LUMO.Messenger.UWP
         void OnNavigationFailed(object sender, NavigationFailedEventArgs e)
         {
             throw new Exception("Failed to load Page " + e.SourcePageType.FullName);
-        }
-
-        private async Task SetStatusAsync(ContatStatus status)
-        {
-            Debug.WriteLine(status.ToString().ToLower());
-            await mqttClient.PublishAsync($"/mschat/status/{user.Nickname}", status.ToString().ToLower(), true);
-        }
-
-        private async Task ReconnectAsync(MqttClientDisconnectReason disconnectReason)
-        {
-            try
-            {
-                await Task.Delay(TimeSpan.FromSeconds(5));
-                switch (disconnectReason)
-                {
-                    case MqttClientDisconnectReason.KeepAliveTimeout:
-                        await mqttClient.ReconnectAsync();
-                        await SetStatusAsync(ContatStatus.Online);
-                        break;
-                    case MqttClientDisconnectReason.DisconnectWithWillMessage:
-                        await mqttClient.ReconnectAsync();
-                        await SetStatusAsync(ContatStatus.Online);
-                        break;
-                    case MqttClientDisconnectReason.ServerBusy:
-                        await mqttClient.ReconnectAsync();
-                        await SetStatusAsync(ContatStatus.Online);
-                        break;
-                }
-            }
-            catch (Exception)
-            {
-                await ReconnectAsync(disconnectReason);
-            }
-        }
-
-        private async void Disconected(MqttClientDisconnectedEventArgs args)
-        {
-            await ReconnectAsync(args.Reason);
-            Debug.WriteLine($"{DateTime.Now.ToShortTimeString()} disconnected.");
         }
 
         /// <summary>
@@ -190,12 +126,7 @@ namespace LUMO.Messenger.UWP
         {
             try
             {
-                await SetStatusAsync(ContatStatus.Offline);
-                await mqttClient.DisconnectAsync(new MQTTnet.Client.Disconnecting.MqttClientDisconnectOptions()
-                {
-                    ReasonCode = MQTTnet.Client.Disconnecting.MqttClientDisconnectReason.NormalDisconnection,
-                }, 
-                System.Threading.CancellationToken.None);
+                await messengerClient.DisconnectAsync(MqttClientDisconnectReason.NormalDisconnection);
             }
             catch(Exception ex)
             {

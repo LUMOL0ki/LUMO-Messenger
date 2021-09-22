@@ -26,6 +26,20 @@
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Row="0" Grid.Column="0" FontSize="24" Padding="8" Foreground="{StaticResource PrimaryTextColor}" HorizontalAlignment="Center" Text="{x:Bind user.Nickname}">Username</TextBlock>
+                    <Button x:Name="RefreshConnectionButton" Grid.Row="0" Grid.Column="1" Padding="8" CornerRadius="4" Visibility="Collapsed" Foreground="{StaticResource PrimaryTextColor}" Click="RefreshConnectionButton_Click">
+                        <Button.Resources>
+                            <ResourceDictionary>
+                                <ResourceDictionary.MergedDictionaries>
+                                    <ResourceDictionary>
+                                        <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="{StaticResource SecondaryTextColor}"/>
+                                        <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="{StaticResource SecondaryButtonHoverColor}"/>
+                                        <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="{StaticResource SecondaryButtonActiveColor}"/>
+                                    </ResourceDictionary>
+                                </ResourceDictionary.MergedDictionaries>
+                            </ResourceDictionary>
+                        </Button.Resources>
+                        <FontIcon Glyph="&#xe72c;"/>
+                    </Button>
                     <!--
                     <ComboBox Grid.Column="1" PlaceholderText="Unknown" VerticalAlignment="Center">
                         

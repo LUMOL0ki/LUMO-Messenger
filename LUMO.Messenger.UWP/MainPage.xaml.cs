@@ -1,4 +1,5 @@
 ﻿using LUMO.Messenger.Models;
+using LUMO.Messenger.UWP.Clients;
 using LUMO.Messenger.UWP.Models;
 using MQTTnet;
 using MQTTnet.Client;
@@ -40,49 +41,26 @@ namespace LUMO.Messenger.UWP
         private readonly Queue<MessageSend> messageQueue = new Queue<MessageSend>();
 
         private Contact user;
-        private IMqttClient mqttClient;
+        private MessengerClient messengerClient;
         private string currentTopic = "all";
 
         public MainPage()
         {
             this.InitializeComponent();
-            user = new Contact
-            {
-                Nickname = "MOR0157",
-                Status = ContatStatus.Online
-            };
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            mqttClient = ((App)Application.Current).mqttClient;
+            user = ((App)Application.Current).user;
+            messengerClient = ((App)Application.Current).messengerClient;
 
-            /*CurrentMessages = new ObservableCollection<MessageReceived>()
-            {
-                new MessageReceived
-                {
-                    Sender = new Contact
-                    {
-                        Nickname = "anon"
-                    },
-                    Content = "Hello",
-                    Created = DateTime.Parse(DateTime.Now.ToString("HH:mm:ss"))
-                }
-            };
-            */
-            contacts = new ObservableCollection<Contact>();
-            groups = new ObservableCollection<Group>()
-            {
-                new Group
-                {
-                    Name = "all"
-                }
-            };
+            contacts = messengerClient.Contacts;
+            groups = messengerClient.Groups;
 
-            currentMessages = groups[0].Messages;
+            currentMessages = messengerClient.CurrentMessages;
             
-            mqttClient.UseApplicationMessageReceivedHandler(async amr =>
+            messengerClient.UseApplicationMessageReceivedHandler(async amr =>
             {
                 string topic = amr.ApplicationMessage.Topic;
                 switch (topic)
@@ -95,16 +73,15 @@ namespace LUMO.Messenger.UWP
                         break;
                 }
             });
-            /*
+
             try
             {
-                await mqttClient.ConnectAsync(mqttOptions);
-                await SetStatusAsync(ContatStatus.Online);
+                await messengerClient.ConnectAsync();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Debug.WriteLine(ex.Message);
             }
-            */
         }
 
         private async Task SendMessageAsync(string message)
@@ -119,11 +96,11 @@ namespace LUMO.Messenger.UWP
             {
                 foreach(MessageSend messageInQueue in messageQueue)
                 {
-                    await SendMessageAsync(messageInQueue);
+                    await messengerClient.SendMessageAsync(messageInQueue);
                 }
                 messageQueue.Clear();
 
-                await SendMessageAsync(messageSend);
+                await messengerClient.SendMessageAsync(messageSend);
             }
             catch(Exception ex)
             {
@@ -132,46 +109,13 @@ namespace LUMO.Messenger.UWP
             }
         }
 
-        private async Task SendMessageAsync(MessageSend message)
-        {
-            await mqttClient.PublishAsync(message.Topic, message.ToString(), true);
-            if (message.Topic.Contains("user") && !message.Topic.Contains($"user/{user.Nickname}"))
-            {
-                currentMessages.Add(new MessageReceived
-                {
-                    Sender = user,
-                    Content = message.Content,
-                    Created = message.Created,
-                    Orientation = MessageOrientation.Right
-                });
-            }
-        }
-
         private async Task ReceiveMessageAsync(string topic, byte[] payload)
         {
-            string sender = topic.Split("/").Last();
-            string[] payloadParts = new string[2];
-            int index = 0;
-
-            foreach (string part in Encoding.UTF8.GetString(payload).Split("Aktuální čas: "))
-            {
-                payloadParts[index] = part;
-                index++;
-            }
-
             try
             {
                 await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                 {
-                    MessageReceived newMessage = new MessageReceived
-                    {
-                        Sender = new Contact { Nickname = sender },
-                        Content = payloadParts[0],
-                        Created = payloadParts[1] != null ? DateTime.Parse(payloadParts[1]) : DateTime.Now,
-                        Orientation = user.Nickname.Equals(sender) ? MessageOrientation.Right : MessageOrientation.Left
-                    };
-
-                    
+                    MessageReceived newMessage = messengerClient.GetMessageReceived(topic, payload);
 
                     Debug.WriteLine(newMessage.ToString());
 
@@ -182,20 +126,17 @@ namespace LUMO.Messenger.UWP
                     else if (topic.Contains("/user/"))
                     {
                         Debug.WriteLine(topic);
-                        Contact contact = contacts.FirstOrDefault(c => sender.Equals(c.Nickname));
+                        Contact contact = contacts.FirstOrDefault(c => newMessage.Sender.Nickname.Equals(c.Nickname));
                         if(contact == null)
                         {
                             contacts.Add(new Contact
                             {
-                                Nickname = sender
+                                Nickname = newMessage.Sender.Nickname
                             });
                             contact = contacts.Last();
                         }
                         contact.Messages.Add(newMessage);
                     }
-                    /*
-                    Messages.Add(newMessage);
-                    */
                 });
             }
             catch (Exception ex)
@@ -207,19 +148,10 @@ namespace LUMO.Messenger.UWP
         private async Task UpdateStatusAsync(string topic, byte[] payload)
         {
             string[] topicArray = topic.Split("/");
-            string payloadText = Encoding.UTF8.GetString(payload);
-            string[] payloadParts = payloadText.Split(" ");
 
             Contact contactToUpdate = contacts.FirstOrDefault(c => c.Nickname.Equals(topicArray[3]));
 
-            if(contactToUpdate != null)
-            {
-                await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
-                {
-                    contactToUpdate.SetStatus(payloadParts.Count() > 1 ? payloadParts.Last() : payloadParts[0]);
-                });
-            }
-            else
+            if(contactToUpdate == null)
             {
                 await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                 {
@@ -227,8 +159,15 @@ namespace LUMO.Messenger.UWP
                     {
                         Nickname = topicArray[3]
                     };
-                    contactToUpdate.SetStatus(payloadParts.Count() > 1 ? payloadParts.Last() : payloadParts[0]);
+                    contactToUpdate.Status = messengerClient.GetStatus(payload);
                     contacts.Add(contactToUpdate);
+                });
+            }
+            else
+            {
+                await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                {
+                    contactToUpdate.Status = messengerClient.GetStatus(payload);
                 });
             }
         }
@@ -258,6 +197,11 @@ namespace LUMO.Messenger.UWP
             messageReceiveList.ItemsSource = currentMessages;
             currentTopic = $"user/{clickedContact.Nickname}";
             Debug.WriteLine(currentTopic);
+        }
+
+        private async void RefreshConnectionButton_Click(object sender, RoutedEventArgs e)
+        {
+            await messengerClient.ReconnectAsync();
         }
     }
 }
