@@ -43,7 +43,6 @@ namespace LUMO.Messenger.UWP
 
         private Contact user;
         private MessengerClient messengerClient;
-        private string currentTopic = "all";
 
         public MainPage()
         {
@@ -60,16 +59,18 @@ namespace LUMO.Messenger.UWP
             groups = messengerClient.Groups;
 
             currentMessages = messengerClient.CurrentMessages;
-            
+            messengerClient.CurrentTopic = "all";
             messengerClient.UseApplicationMessageReceivedHandler(async amr =>
             {
                 string topic = amr.ApplicationMessage.Topic;
                 switch (topic)
                 {
                     case string message when message.Contains("/all/") || message.Contains("/user/"):
+                        //messengerClient.ReceiveMessageAsync(topic, amr.ApplicationMessage.Payload);
                         await ReceiveMessageAsync(topic, amr.ApplicationMessage.Payload);
                         break;
                     case string status when status.Contains("/status/"):
+                        //messengerClient.UpdateStatusAsync(topic, amr.ApplicationMessage.Payload);
                         await UpdateStatusAsync(topic, amr.ApplicationMessage.Payload);
                         break;
                 }
@@ -87,76 +88,22 @@ namespace LUMO.Messenger.UWP
 
         private async Task SendMessageAsync(string message)
         {
-
-            if (SendText.Text == "")
-            {
-                return;
-            }
-
-            MessageSend messageSend = new MessageSend
-            {
-                Topic = $"/mschat/{currentTopic}/{user.Nickname}",
-                Content = message
-            };
-
-            try
-            {
-                foreach(MessageSend messageInQueue in messageQueue)
-                {
-                    await messengerClient.SendMessageAsync(messageInQueue);
-                }
-                messageQueue.Clear();
-
-                await messengerClient.SendMessageAsync(messageSend);
-            }
-            catch(Exception ex)
-            {
-                Debug.WriteLine(ex.Message);
-                messageQueue.Enqueue(messageSend);
-            }
+            await messengerClient.SendMessageAsync(message);
         }
 
         private async Task ReceiveMessageAsync(string topic, byte[] payload)
         {
-            try
+            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
             {
-                await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
-                {
-                    MessageReceived newMessage = messengerClient.GetMessageReceived(topic, payload);
-
-                    Debug.WriteLine(newMessage.ToString());
-
-                    if (topic.Contains("/all/"))
-                    {
-                        groups.FirstOrDefault(g => topic.Contains(g.Name)).Messages.Add(newMessage);
-                    }
-                    else if (topic.Contains("/user/"))
-                    {
-                        Debug.WriteLine(topic);
-                        Contact contact = contacts.FirstOrDefault(c => newMessage.Sender.Nickname.Equals(c.Nickname));
-                        if(contact == null)
-                        {
-                            contacts.Add(new Contact
-                            {
-                                Nickname = newMessage.Sender.Nickname
-                            });
-                            contact = contacts.Last();
-                        }
-                        contact.Messages.Add(newMessage);
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.Message);
-            }
+                messengerClient.ReceiveMessageAsync(topic, payload);
+            });
         }
 
         private async Task UpdateStatusAsync(string topic, byte[] payload)
         {
             string[] topicArray = topic.Split("/");
 
-            Contact contactToUpdate = contacts.FirstOrDefault(c => c.Nickname.Equals(topicArray[3]));
+            Contact contactToUpdate = messengerClient.Contacts.FirstOrDefault(c => c.Nickname.Equals(topicArray.Last()));
 
             if(contactToUpdate == null)
             {
@@ -164,10 +111,10 @@ namespace LUMO.Messenger.UWP
                 {
                     contactToUpdate = new Contact()
                     {
-                        Nickname = topicArray[3]
+                        Nickname = topicArray.Last()
                     };
                     contactToUpdate.Status = messengerClient.GetStatus(payload);
-                    contacts.Add(contactToUpdate);
+                    messengerClient.Contacts.Add(contactToUpdate);
                 });
             }
             else
@@ -195,7 +142,7 @@ namespace LUMO.Messenger.UWP
             messengerClient.CurrentMessages = clickedGroup.Messages;
             currentMessages = messengerClient.CurrentMessages;
             messageReceiveList.ItemsSource = currentMessages;
-            currentTopic = clickedGroup.Name;
+            messengerClient.CurrentTopic = clickedGroup.Name;
         }
 
         private void contactList_ItemClick(object sender, ItemClickEventArgs e)
@@ -204,8 +151,7 @@ namespace LUMO.Messenger.UWP
             messengerClient.CurrentMessages = clickedContact.Messages;
             currentMessages = messengerClient.CurrentMessages;
             messageReceiveList.ItemsSource = currentMessages;
-            currentTopic = $"user/{clickedContact.Nickname}";
-            Debug.WriteLine(currentTopic);
+            messengerClient.CurrentTopic = $"user/{clickedContact.Nickname}";
         }
 
         private async void RefreshConnectionButton_Click(object sender, RoutedEventArgs e)

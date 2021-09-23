@@ -68,6 +68,60 @@ namespace LUMO.Messenger.UWP.Clients
             await mqttClient.PublishAsync($"/mschat/status/{User.Nickname}", status.ToString().ToLower(), true);
         }
 
+        public void ReceiveMessageAsync(string topic, byte[] payload)
+        {
+            try
+            {
+                MessageReceived newMessage = GetMessageReceived(topic, payload);
+
+                Debug.WriteLine(newMessage.ToString());
+
+                if (topic.Contains("/all/"))
+                {
+                    Groups.FirstOrDefault(g => topic.Contains(g.Name)).Messages.Add(newMessage);
+                }
+                else if (topic.Contains("/user/"))
+                {
+                    Debug.WriteLine(topic);
+                    Contact contact = Contacts.FirstOrDefault(c => newMessage.Sender.Nickname.Equals(c.Nickname));
+                    if (contact == null)
+                    {
+                        Contacts.Add(new Contact
+                        {
+                            Nickname = newMessage.Sender.Nickname
+                        });
+                        contact = Contacts.Last();
+                    }
+                    contact.Messages.Add(newMessage);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
+        }
+
+        public void UpdateStatusAsync(string topic, byte[] payload)
+        {
+            string[] topicArray = topic.Split("/");
+
+            Contact contactToUpdate = Contacts.FirstOrDefault(c => c.Nickname.Equals(topicArray.Last()));
+
+            if (contactToUpdate == null)
+            {
+                contactToUpdate = new Contact()
+                {
+                    Nickname = topicArray.Last()
+                };
+                contactToUpdate.Status = GetStatus(payload);
+                Contacts.Add(contactToUpdate);
+            }
+            else
+            {
+                contactToUpdate.Status = GetStatus(payload);
+            }
+        }
+
         public async Task ConnectAsync()
         {
             mqttClientOptions = new MqttClientOptionsBuilder()
@@ -123,8 +177,22 @@ namespace LUMO.Messenger.UWP.Clients
             }, System.Threading.CancellationToken.None);
         }
 
+        public async Task SendMessageAsync(string message)
+        {
+            await SendMessageAsync(new MessageSend
+            {
+                Topic = $"/mschat/{CurrentTopic}/{User.Nickname}",
+                Content = message
+            });
+        }
+
         public async Task SendMessageAsync(MessageSend message)
         {
+            if (string.IsNullOrEmpty(message.Content))
+            {
+                return;
+            }
+
             try
             {
                 await mqttClient.PublishAsync(message.Topic, message.ToString(), true);
