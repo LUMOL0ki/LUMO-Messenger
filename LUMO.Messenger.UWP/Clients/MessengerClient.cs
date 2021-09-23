@@ -20,7 +20,6 @@ namespace LUMO.Messenger.UWP.Clients
     {
         private IMqttClient mqttClient = new MqttFactory().CreateMqttClient();
         private IMqttClientOptions mqttClientOptions;
-
         private Queue<MessageSend> messageQueue = new Queue<MessageSend>();
 
         public MessengerClient()
@@ -158,7 +157,14 @@ namespace LUMO.Messenger.UWP.Clients
             string payloadText = Encoding.UTF8.GetString(statusPayload);
             string[] payloadParts = payloadText.Split(" ");
             string status = payloadParts.Count() > 1 ? payloadParts.Last() : payloadParts[0];
-            return (ContatStatus)Enum.Parse(typeof(ContatStatus), status, true);
+            try
+            {
+                return (ContatStatus)Enum.Parse(typeof(ContatStatus), status, true);
+            }
+            catch(Exception)
+            {
+                return ContatStatus.Unknown;
+            }
         }
 
         public MessageReceived GetMessageReceived(string topic, byte[] payload)

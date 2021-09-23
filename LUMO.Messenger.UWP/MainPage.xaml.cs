@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.System;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -86,6 +87,12 @@ namespace LUMO.Messenger.UWP
 
         private async Task SendMessageAsync(string message)
         {
+
+            if (SendText.Text == "")
+            {
+                return;
+            }
+
             MessageSend messageSend = new MessageSend
             {
                 Topic = $"/mschat/{currentTopic}/{user.Nickname}",
@@ -185,7 +192,8 @@ namespace LUMO.Messenger.UWP
         {
             //(contactList.ContainerFromItem(e.ClickedItem) as ListViewItem).IsSelected = false;
             Group clickedGroup = e.ClickedItem as Group;
-            currentMessages = clickedGroup.Messages;
+            messengerClient.CurrentMessages = clickedGroup.Messages;
+            currentMessages = messengerClient.CurrentMessages;
             messageReceiveList.ItemsSource = currentMessages;
             currentTopic = clickedGroup.Name;
         }
@@ -193,7 +201,8 @@ namespace LUMO.Messenger.UWP
         private void contactList_ItemClick(object sender, ItemClickEventArgs e)
         {
             Contact clickedContact = e.ClickedItem as Contact;
-            currentMessages = clickedContact.Messages;
+            messengerClient.CurrentMessages = clickedContact.Messages;
+            currentMessages = messengerClient.CurrentMessages;
             messageReceiveList.ItemsSource = currentMessages;
             currentTopic = $"user/{clickedContact.Nickname}";
             Debug.WriteLine(currentTopic);
@@ -202,6 +211,16 @@ namespace LUMO.Messenger.UWP
         private async void RefreshConnectionButton_Click(object sender, RoutedEventArgs e)
         {
             await messengerClient.ReconnectAsync();
+        }
+
+        private async void SendText_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+
+            if (SendText.Text != "" && e.Key.Equals(VirtualKey.Enter))
+            {
+                await SendMessageAsync(SendText.Text);
+                SendText.Text = "";
+            }
         }
     }
 }

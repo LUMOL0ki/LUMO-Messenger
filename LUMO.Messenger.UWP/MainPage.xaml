@@ -216,7 +216,7 @@
                     <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBox x:Name="SendText" BorderThickness="0" PlaceholderText="Write message..." TextWrapping="Wrap" Padding="16 8" CornerRadius="4" VerticalContentAlignment="Center" VerticalAlignment="Stretch" Background="{x:Null}">
+                <TextBox x:Name="SendText" BorderThickness="0" PlaceholderText="Write message..." TextWrapping="Wrap" Padding="16 8" CornerRadius="4" VerticalContentAlignment="Center" VerticalAlignment="Stretch" Background="{x:Null}" KeyDown="SendText_KeyDown">
                     <TextBox.Resources>
                         <ResourceDictionary>
                             <ResourceDictionary.MergedDictionaries>
