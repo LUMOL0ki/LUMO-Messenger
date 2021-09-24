@@ -1,4 +1,5 @@
 ﻿using LUMO.Messenger.Models;
+using LUMO.Messenger.UWP.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,14 +17,13 @@ namespace LUMO.Messenger.UWP.Models
         Right
     }
 
-    public class MessageReceived
+    public class MessageReceived : Message
     {
-        public Contact Sender { get; set; }
-        public string Content { get; set; }
-        public DateTime Created { get; set; }
-        public string CreatedText => Created.ToString("HH:mm:ss");
+        public virtual DateTime Timestamp { get; set; }
+        public string TimestampAsFormattedText => Timestamp.ToString("HH:mm:ss");
         public MessageOrientation Orientation { get; set; } = MessageOrientation.Left;
         public string OrientationText => Orientation.ToString();
+
         public Brush Background
         {
             get
@@ -39,10 +39,30 @@ namespace LUMO.Messenger.UWP.Models
                 }
             }
         }
+        public Brush Foreground
+        {
+            get
+            {
+                switch (Orientation)
+                {
+                    case MessageOrientation.Left:
+                        return new SolidColorBrush((Color)Application.Current.Resources["PrimaryTextColor"]);
+                    case MessageOrientation.Right:
+                        return new SolidColorBrush((Color)Application.Current.Resources["AlternativeTextColor"]);
+                    default:
+                        return null;
+                }
+            }
+        }
+
+        public static MessageReceived Parse(string topic, byte[] payload)
+        {
+            return MessageHelper.Parse(topic, payload);
+        }
 
         public override string ToString()
         {
-            return $"{Sender} {CreatedText}: {Content}";
+            return $"{TimestampAsFormattedText} {Sender}: {Content}";
         }
     }
 }

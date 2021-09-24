@@ -7,16 +7,37 @@
     <Application.Resources>
         <Color x:Key="PrimaryTextColor">#49454A</Color>
         <Color x:Key="SecondaryTextColor">#FF484848</Color>
-        <Color x:Key="PrimaryBackgroundColor">#FFF7F0F0</Color>
-        <Color x:Key="SecondaryBackgroundColor">#FDFCFC</Color>
-        <Color x:Key="PrimaryButtonColor">#FF7EB9B1</Color>
-        <Color x:Key="PrimaryButtonHoverColor">#A2CDC7</Color>
-        <Color x:Key="PrimaryButtonActiveColor">#BDDBD7</Color>
+        <Color x:Key="AlternativeTextColor">#FFF</Color>
+        <Color x:Key="PrimaryBackgroundColor">#F5F5F5</Color>
+        <Color x:Key="SecondaryBackgroundColor">#FFF</Color>
+        <Color x:Key="PrimaryButtonColor">#00A499</Color>
+        <Color x:Key="PrimaryButtonHoverColor">#00bdb0</Color>
+        <Color x:Key="PrimaryButtonActiveColor">#00c7ba</Color>
         <Color x:Key="SecondaryButtonColor">Transparent</Color>
-        <Color x:Key="SecondaryButtonHoverColor">#F1E4E4</Color>
-        <Color x:Key="SecondaryButtonActiveColor">#E3C9C9</Color>
-        <Color x:Key="OnlineStatusColor">#22BDA5</Color>
+        <Color x:Key="SecondaryButtonHoverColor">#ededed</Color>
+        <Color x:Key="SecondaryButtonActiveColor">#F5F5F5</Color>
+        <Color x:Key="OnlineStatusColor">#00A499</Color>
         <Color x:Key="OfflineStatusColor">#DE2846</Color>
         <Color x:Key="UnknownStatusColor">#675656</Color>
+
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+            <Setter Property="Foreground" Value="{StaticResource AlternativeTextColor}"/>
+            <Setter Property="Background" Value="{StaticResource PrimaryButtonColor}"/>
+            <Setter Property="Padding" Value="16 8"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+
+        <Style x:Key="PrimaryGridStyle" TargetType="Grid">
+            <Setter Property="Background" Value="{StaticResource SecondaryBackgroundColor}"/>
+            <Setter Property="CornerRadius" Value="8"/>
+        </Style>
+
+        <ResourceDictionary x:Key="PrimaryButtonTheme">
+            <ResourceDictionary.MergedDictionaries>
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" ControlsResourcesVersion="Version1"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

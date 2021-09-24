@@ -18,9 +18,9 @@ namespace LUMO.Messenger.UWP.Clients
 {
     public class MessengerClient
     {
-        private IMqttClient mqttClient = new MqttFactory().CreateMqttClient();
+        private readonly Queue<MessageSend> messageQueue = new Queue<MessageSend>();
+        private readonly IMqttClient mqttClient = new MqttFactory().CreateMqttClient();
         private IMqttClientOptions mqttClientOptions;
-        private Queue<MessageSend> messageQueue = new Queue<MessageSend>();
 
         public MessengerClient()
         {
@@ -32,7 +32,7 @@ namespace LUMO.Messenger.UWP.Clients
                     Name = "all"
                 }
             };
-            CurrentMessages = Groups.FirstOrDefault().Messages;
+            //CurrentMessages = Groups.FirstOrDefault().Messages;
         }
 
         public Contact User { get; set; }
@@ -47,14 +47,14 @@ namespace LUMO.Messenger.UWP.Clients
         public ObservableCollection<Group> Groups;
         public ObservableCollection<MessageReceived> CurrentMessages;
 
-        private async void ConnectedAsync(MqttClientConnectedEventArgs args)
+        private async void OnConnectedAsync(MqttClientConnectedEventArgs args)
         {
             Debug.WriteLine(args.AuthenticateResult.ResultCode);
             Debug.WriteLine($"{DateTime.Now.ToShortTimeString()} connected.");
             await mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic("/mschat/#").Build());
         }
 
-        private async void DisconectedAsync(MqttClientDisconnectedEventArgs args)
+        private async void OnDisconectedAsync(MqttClientDisconnectedEventArgs args)
         {
             if(args.Reason != MqttClientDisconnectReason.NormalDisconnection)
             {
@@ -68,7 +68,13 @@ namespace LUMO.Messenger.UWP.Clients
             await mqttClient.PublishAsync($"/mschat/status/{User.Nickname}", status.ToString().ToLower(), true);
         }
 
-        public void ReceiveMessageAsync(string topic, byte[] payload)
+        private MessageReceived GetMessageReceived(string topic, byte[] payload)
+        {
+            
+            return MessageFactory.CreateMessageReceived(User, topic, payload);
+        }
+
+        public void OnMessageReceived(string topic, byte[] payload)
         {
             try
             {
@@ -101,7 +107,7 @@ namespace LUMO.Messenger.UWP.Clients
             }
         }
 
-        public void UpdateStatusAsync(string topic, byte[] payload)
+        public void OnStatusUpdate(string topic, byte[] payload)
         {
             string[] topicArray = topic.Split("/");
 
@@ -135,8 +141,8 @@ namespace LUMO.Messenger.UWP.Clients
                                                    .WithWillMessage(MessageFactory.CreateWillMessage(User.Nickname))
                                                    .Build();
 
-            mqttClient.ConnectedHandler = new MqttClientConnectedHandlerDelegate(ConnectedAsync);
-            mqttClient.DisconnectedHandler = new MqttClientDisconnectedHandlerDelegate(DisconectedAsync);
+            mqttClient.ConnectedHandler = new MqttClientConnectedHandlerDelegate(OnConnectedAsync);
+            mqttClient.DisconnectedHandler = new MqttClientDisconnectedHandlerDelegate(OnDisconectedAsync);
             
 
             await mqttClient.ConnectAsync(mqttClientOptions);
@@ -195,16 +201,10 @@ namespace LUMO.Messenger.UWP.Clients
 
             try
             {
-                await mqttClient.PublishAsync(message.Topic, message.ToString(), true);
+                await mqttClient.PublishAsync(message.Topic, message.Content, true);
                 if (message.Topic.Contains("user") && !message.Topic.Contains($"user/{User.Nickname}"))
                 {
-                    CurrentMessages.Add(new MessageReceived
-                    {
-                        Sender = User,
-                        Content = message.Content,
-                        Created = message.Created,
-                        Orientation = MessageOrientation.Right
-                    });
+                    CurrentMessages.Add(MessageFactory.CreateMessageReceived(User, message, MessageOrientation.Right));
                 }
             }
             catch (Exception ex)
@@ -233,27 +233,6 @@ namespace LUMO.Messenger.UWP.Clients
             {
                 return ContatStatus.Unknown;
             }
-        }
-
-        public MessageReceived GetMessageReceived(string topic, byte[] payload)
-        {
-            string sender = topic.Split("/").Last();
-            string[] payloadParts = new string[2];
-            int index = 0;
-
-            foreach (string part in Encoding.UTF8.GetString(payload).Split("Aktuální čas: "))
-            {
-                payloadParts[index] = part;
-                index++;
-            }
-
-            return new MessageReceived
-            {
-                Sender = new Contact { Nickname = sender },
-                Content = payloadParts[0],
-                Created = payloadParts[1] != null ? DateTime.Parse(payloadParts[1]) : DateTime.Now,
-                Orientation = User.Nickname.Equals(sender) ? MessageOrientation.Right : MessageOrientation.Left
-            };
         }
     }
 }

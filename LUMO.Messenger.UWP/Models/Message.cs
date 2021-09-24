@@ -1,17 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace LUMO.Messenger.Models
 {
     public class Message
     {
         public Contact Sender { get; set; }
-        public string Content { get; set; }
-        public DateTime Created { get; set; }
-        public string CreatedText => Created.ToString("HH:mm:ss");
+        public virtual string Content { get; set; }
 
         public override string ToString()
         {
-            return $"{Sender} {CreatedText}: {Content}";
+            return $"{Sender}: {Content}";
         }
     }
 }

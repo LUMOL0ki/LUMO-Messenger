@@ -65,13 +65,15 @@ namespace LUMO.Messenger.UWP
                 Status = ContatStatus.Online
             };
 
-            messengerClient = new MessengerClient();
-            messengerClient.Host = host;
-            messengerClient.Port = port;
-            messengerClient.ClientId = clientId;
-            messengerClient.User = user;
-            messengerClient.Username = username;
-            messengerClient.Password = password;
+            messengerClient = new MessengerClient
+            {
+                Host = host,
+                Port = port,
+                ClientId = clientId,
+                User = user,
+                Username = username,
+                Password = password
+            };
 
             // Do not repeat app initialization when the Window already has content,
             // just ensure that the window is active
@@ -98,7 +100,7 @@ namespace LUMO.Messenger.UWP
                     // When the navigation stack isn't restored navigate to the first page,
                     // configuring the new page by passing required information as a navigation
                     // parameter
-                    rootFrame.Navigate(typeof(MainPage), e.Arguments);
+                    rootFrame.Navigate(typeof(SignInPage), e.Arguments);
                 }
                 // Ensure the current window is active
                 Window.Current.Activate();

@@ -28,12 +28,14 @@ namespace LUMO.Messenger.Models
             {
                 switch (Status) 
                 {
+                    /*
                     case ContatStatus.Online:
                         return new SolidColorBrush((Color)Application.Current.Resources["OnlineStatusColor"]);
                     case ContatStatus.Offline:
                         return new SolidColorBrush((Color)Application.Current.Resources["OfflineStatusColor"]);
                     case ContatStatus.Unknown:
                         return new SolidColorBrush((Color)Application.Current.Resources["UnknownStatusColor"]);
+                    */
                     default:
                         return null;
                 }

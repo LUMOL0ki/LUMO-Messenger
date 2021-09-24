@@ -36,10 +36,8 @@ namespace LUMO.Messenger.UWP
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        private ObservableCollection<MessageReceived> currentMessages;
         private ObservableCollection<Contact> contacts;
         private ObservableCollection<Group> groups;
-        private readonly Queue<MessageSend> messageQueue = new Queue<MessageSend>();
 
         private Contact user;
         private MessengerClient messengerClient;
@@ -58,20 +56,16 @@ namespace LUMO.Messenger.UWP
             contacts = messengerClient.Contacts;
             groups = messengerClient.Groups;
 
-            currentMessages = messengerClient.CurrentMessages;
-            messengerClient.CurrentTopic = "all";
             messengerClient.UseApplicationMessageReceivedHandler(async amr =>
             {
                 string topic = amr.ApplicationMessage.Topic;
                 switch (topic)
                 {
                     case string message when message.Contains("/all/") || message.Contains("/user/"):
-                        //messengerClient.ReceiveMessageAsync(topic, amr.ApplicationMessage.Payload);
-                        await ReceiveMessageAsync(topic, amr.ApplicationMessage.Payload);
+                        await MessageReceivedAsync(topic, amr.ApplicationMessage.Payload);
                         break;
                     case string status when status.Contains("/status/"):
-                        //messengerClient.UpdateStatusAsync(topic, amr.ApplicationMessage.Payload);
-                        await UpdateStatusAsync(topic, amr.ApplicationMessage.Payload);
+                        await StatusUpdateAsync(topic, amr.ApplicationMessage.Payload);
                         break;
                 }
             });
@@ -86,71 +80,49 @@ namespace LUMO.Messenger.UWP
             }
         }
 
-        private async Task SendMessageAsync(string message)
+        private async Task MessageSendAsync(string message)
         {
-            await messengerClient.SendMessageAsync(message);
-        }
-
-        private async Task ReceiveMessageAsync(string topic, byte[] payload)
-        {
-            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            if (SendText.Text != "")
             {
-                messengerClient.ReceiveMessageAsync(topic, payload);
-            });
-        }
-
-        private async Task UpdateStatusAsync(string topic, byte[] payload)
-        {
-            string[] topicArray = topic.Split("/");
-
-            Contact contactToUpdate = messengerClient.Contacts.FirstOrDefault(c => c.Nickname.Equals(topicArray.Last()));
-
-            if(contactToUpdate == null)
-            {
-                await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
-                {
-                    contactToUpdate = new Contact()
-                    {
-                        Nickname = topicArray.Last()
-                    };
-                    contactToUpdate.Status = messengerClient.GetStatus(payload);
-                    messengerClient.Contacts.Add(contactToUpdate);
-                });
-            }
-            else
-            {
-                await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
-                {
-                    contactToUpdate.Status = messengerClient.GetStatus(payload);
-                });
-            }
-        }
-
-        private async void SendButton_Click(object sender, RoutedEventArgs e)
-        {
-            if(SendText.Text != "")
-            {
-                await SendMessageAsync(SendText.Text);
+                await messengerClient.SendMessageAsync(message);
                 SendText.Text = "";
             }
         }
 
-        private void groupList_ItemClick(object sender, ItemClickEventArgs e)
+        private async Task MessageReceivedAsync(string topic, byte[] payload)
         {
-            //(contactList.ContainerFromItem(e.ClickedItem) as ListViewItem).IsSelected = false;
+            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+                messengerClient.OnMessageReceived(topic, payload);
+            });
+        }
+
+        private async Task StatusUpdateAsync(string topic, byte[] payload)
+        {
+            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+                messengerClient.OnStatusUpdate(topic, payload);
+            });
+        }
+
+        private async void SendButton_Click(object sender, RoutedEventArgs e)
+        {
+            await MessageSendAsync(SendText.Text);
+        }
+
+        private void GroupList_ItemClick(object sender, ItemClickEventArgs e)
+        {
             Group clickedGroup = e.ClickedItem as Group;
             messengerClient.CurrentMessages = clickedGroup.Messages;
-            currentMessages = messengerClient.CurrentMessages;
-            messageReceiveList.ItemsSource = currentMessages;
+            messageReceiveList.ItemsSource = messengerClient.CurrentMessages;
             messengerClient.CurrentTopic = clickedGroup.Name;
         }
 
-        private void contactList_ItemClick(object sender, ItemClickEventArgs e)
+        private void ContactList_ItemClick(object sender, ItemClickEventArgs e)
         {
             Contact clickedContact = e.ClickedItem as Contact;
             messengerClient.CurrentMessages = clickedContact.Messages;
-            currentMessages = messengerClient.CurrentMessages;
-            messageReceiveList.ItemsSource = currentMessages;
+            messageReceiveList.ItemsSource = messengerClient.CurrentMessages;
             messengerClient.CurrentTopic = $"user/{clickedContact.Nickname}";
         }
 
@@ -161,12 +133,7 @@ namespace LUMO.Messenger.UWP
 
         private async void SendText_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-
-            if (SendText.Text != "" && e.Key.Equals(VirtualKey.Enter))
-            {
-                await SendMessageAsync(SendText.Text);
-                SendText.Text = "";
-            }
+            await MessageSendAsync(SendText.Text);
         }
     }
 }
