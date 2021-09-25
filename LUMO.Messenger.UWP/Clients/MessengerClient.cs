@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace LUMO.Messenger.UWP.Clients
 {
-    public class MessengerClient
+    public class MessengerClient : IDisposable
     {
         private readonly Queue<MessageSend> messageQueue = new Queue<MessageSend>();
         private readonly IMqttClient mqttClient = new MqttFactory().CreateMqttClient();
@@ -42,24 +42,37 @@ namespace LUMO.Messenger.UWP.Clients
         public string Password { get; set; }
         public string CurrentTopic { get; set; }
 
-        public ObservableCollection<Contact> Contacts;
-        public ObservableCollection<Group> Groups;
-        public ObservableCollection<MessageReceived> CurrentMessages;
+        public ObservableCollection<Contact> Contacts { get; }
+        public ObservableCollection<Group> Groups { get; }
+        public ObservableCollection<MessageReceived> CurrentMessages { get; set; }
+
+        public delegate void OnConnectedHandler();
+        public event OnConnectedHandler OnConnected;
+
+        public delegate void OnConnectionFailedHandler();
+        public event OnConnectionFailedHandler OnConnectionFailed;
+
+        public delegate void OnDisconnectedHandler();
+        public event OnDisconnectedHandler OnDisconnected;
+
 
         private async void OnConnectedAsync(MqttClientConnectedEventArgs args)
         {
+            OnConnected?.Invoke();
             Debug.WriteLine(args.AuthenticateResult.ResultCode);
             Debug.WriteLine($"{DateTime.Now.ToShortTimeString()} connected.");
             await mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic("/mschat/#").Build());
+            await SetStatusAsync(Status.Online);
         }
 
-        private async void OnDisconectedAsync(MqttClientDisconnectedEventArgs args)
+        private async void OnDisconnectedAsync(MqttClientDisconnectedEventArgs args)
         {
-            if(args.Reason != MqttClientDisconnectReason.NormalDisconnection)
+            Debug.WriteLine($"{DateTime.Now.ToShortTimeString()} disconnected {args.Reason}.");
+            if (mqttClient.IsConnected)
             {
-                await ReconnectAsync();
+                await SetStatusAsync(Status.Offline);
             }
-            Debug.WriteLine($"{DateTime.Now.ToShortTimeString()} disconnected.");
+            OnDisconnected?.Invoke();
         }
 
         private async Task SetStatusAsync(Status status)
@@ -101,7 +114,7 @@ namespace LUMO.Messenger.UWP.Clients
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex.Message);
+                Debug.WriteLine($"When receiving message exception was invoked: {ex.Message}");
             }
         }
 
@@ -140,11 +153,11 @@ namespace LUMO.Messenger.UWP.Clients
                                                    .Build();
 
             mqttClient.ConnectedHandler = new MqttClientConnectedHandlerDelegate(OnConnectedAsync);
-            mqttClient.DisconnectedHandler = new MqttClientDisconnectedHandlerDelegate(OnDisconectedAsync);
-            
+            mqttClient.DisconnectedHandler = new MqttClientDisconnectedHandlerDelegate(OnDisconnectedAsync);
+
+            Dispose();
 
             await mqttClient.ConnectAsync(mqttClientOptions);
-            await SetStatusAsync(Status.Online);
         }
 
         public async Task ReconnectAsync()
@@ -152,8 +165,6 @@ namespace LUMO.Messenger.UWP.Clients
             try
             {
                 await mqttClient.ReconnectAsync();
-                await SetStatusAsync(Status.Online);
-                await mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic("/mschat/#").Build());
 
                 foreach (MessageSend messageInQueue in messageQueue)
                 {
@@ -163,7 +174,7 @@ namespace LUMO.Messenger.UWP.Clients
             }
             catch (Exception)
             {
-                await ReconnectAsync();
+                OnConnectionFailed?.Invoke();
             }
         }
 
@@ -174,24 +185,17 @@ namespace LUMO.Messenger.UWP.Clients
 
         public async Task DisconnectAsync(MqttClientDisconnectReason reason)
         {
-            try 
-            { 
-                await mqttClient.UnsubscribeAsync("/mschat/#");
-                await SetStatusAsync(Status.Offline);
+            try
+            {
+                Dispose();
                 await mqttClient.DisconnectAsync(new MqttClientDisconnectOptions()
                 {
                     ReasonCode = reason,
                 }, System.Threading.CancellationToken.None);
-                foreach(Group group in Groups)
-                {
-                    group.Messages.Clear();
-                }
-                Contacts.Clear();
-                CurrentMessages = null;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex.Message);
+                Debug.WriteLine($"When disconnecting exception was invoked: {ex.Message}");
             }
         }
 
@@ -221,7 +225,7 @@ namespace LUMO.Messenger.UWP.Clients
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex.Message);
+                Debug.WriteLine($"When sending message exception was invoked: {ex.Message}");
                 messageQueue.Enqueue(message);
             }
 
@@ -245,6 +249,16 @@ namespace LUMO.Messenger.UWP.Clients
             {
                 return Status.Unknown;
             }
+        }
+
+        public async void Dispose()
+        {
+            foreach (Group group in Groups)
+            {
+                group.Messages.Clear();
+            }
+            Contacts.Clear();
+            CurrentMessages = null;
         }
     }
 }

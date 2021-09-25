@@ -238,6 +238,17 @@
                                 <ResourceDictionary>
                                     <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="{StaticResource PrimaryTextColor}"/>
                                     <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="Transparent"/>
+                                    <SolidColorBrush x:Key="TextControlForegroundFocused" Color="{StaticResource PrimaryTextColor}"/>
+                                    <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="Transparent"/>
+                                    <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="Transparent"/>
+                                    <SolidColorBrush x:Key="TextControlButtonForeground" Color="{StaticResource PrimaryTextColor}"/>
+                                    <SolidColorBrush x:Key="TextControlButtonForegroundPointerOver" Color="{StaticResource PrimaryTextColor}"/>
+                                    <SolidColorBrush x:Key="TextControlButtonBackgroundPointerOver" Color="{StaticResource SecondaryButtonHoverColor}"/>
+                                    <SolidColorBrush x:Key="TextControlButtonForegroundPressed" Color="{StaticResource PrimaryTextColor}"/>
+                                    <SolidColorBrush x:Key="TextControlButtonBackgroundPressed" Color="{StaticResource SecondaryButtonActiveColor}"/>
+                                    <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="{StaticResource SecondaryTextColor}"/>
+                                    <SolidColorBrush x:Key="TextControlPlaceholderForegroundPointerOver" Color="{StaticResource SecondaryTextColor}"/>
+                                    <SolidColorBrush x:Key="TextControlPlaceholderForegroundFocused" Color="{StaticResource SecondaryTextColor}"/>
                                 </ResourceDictionary>
                             </ResourceDictionary.MergedDictionaries>
                         </ResourceDictionary>
@@ -265,6 +276,12 @@
                     </Button.Resources>
                     <FontIcon Glyph="&#xE724;" />
                 </Button>
+            </Grid>
+            <Grid x:Name="LoadingGrid" Background="#19000000" CornerRadius="8" Visibility="Collapsed">
+                <ListView VerticalAlignment="Center" SelectionMode="None">
+                    <muxc:ProgressRing x:Name="Loading" Grid.Row="0" Width="80" Height="80" IsActive="False"  Foreground="{StaticResource PrimaryButtonColor}" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="1" Text="Connection lost" HorizontalAlignment="Center"/>
+                </ListView>
             </Grid>
         </Grid>
     </SplitView>

@@ -48,28 +48,52 @@ namespace LUMO.Messenger.UWP
         {
             base.OnNavigatedTo(e);
             messengerClient = ((App)Application.Current).MessengerClient;
-
-            messengerClient.UseApplicationMessageReceivedHandler(async amr =>
-            {
-                string topic = amr.ApplicationMessage.Topic;
-                switch (topic)
-                {
-                    case string message when message.Contains("/all/") || message.Contains("/user/"):
-                        await MessageReceivedAsync(topic, amr.ApplicationMessage.Payload);
-                        break;
-                    case string status when status.Contains("/status/"):
-                        await StatusUpdateAsync(topic, amr.ApplicationMessage.Payload);
-                        break;
-                }
-            });
-
+            messengerClient.OnConnected += MessengerClient_OnConnected;
+            messengerClient.OnDisconnected += MessengerClient_OnDisconnected;
             try
             {
                 await messengerClient.ConnectAsync();
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex.Message);
+                Debug.WriteLine($"When connecting exception was invoked: {ex.Message}");
+            }
+        }
+
+        private async void MessengerClient_OnConnected()
+        {
+            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+                messengerClient.Dispose();
+                LoadingGrid.Visibility = Visibility.Collapsed;
+                Loading.IsActive = false;
+            });
+        }
+
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            base.OnNavigatedFrom(e);
+            messengerClient.OnDisconnected -= MessengerClient_OnDisconnected;
+        }
+
+        private async void MessengerClient_OnDisconnected()
+        {
+            try
+            {
+                await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                {
+                    LoadingGrid.Visibility = Visibility.Visible;
+                    Loading.IsActive = true;
+                });
+                await messengerClient.ReconnectAsync();
+            }
+            catch (Exception)
+            {
+                await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                {
+                    messengerClient.Dispose();
+                    GoBack();
+                });
             }
         }
 
@@ -80,22 +104,6 @@ namespace LUMO.Messenger.UWP
                 await messengerClient.SendMessageAsync(message);
                 SendText.Text = "";
             }
-        }
-
-        private async Task MessageReceivedAsync(string topic, byte[] payload)
-        {
-            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
-            {
-                messengerClient.OnMessageReceived(topic, payload);
-            });
-        }
-
-        private async Task StatusUpdateAsync(string topic, byte[] payload)
-        {
-            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
-            {
-                messengerClient.OnStatusUpdate(topic, payload);
-            });
         }
 
         private void GoBack()
@@ -139,7 +147,7 @@ namespace LUMO.Messenger.UWP
 
         private async void SignOutButton_Click(object sender, RoutedEventArgs e)
         {
-            //await messengerClient.DisconnectAsync(MqttClientDisconnectReason.NormalDisconnection);
+            await messengerClient.DisconnectAsync(MqttClientDisconnectReason.NormalDisconnection);
             GoBack();
         }
 

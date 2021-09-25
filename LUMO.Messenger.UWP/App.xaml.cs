@@ -17,6 +17,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
+using Windows.ApplicationModel.Core;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
@@ -73,6 +74,20 @@ namespace LUMO.Messenger.UWP
                 Password = password
             };
 
+            MessengerClient.UseApplicationMessageReceivedHandler(async amr =>
+            {
+                string topic = amr.ApplicationMessage.Topic;
+                switch (topic)
+                {
+                    case string message when message.Contains("/all/") || message.Contains("/user/"):
+                        await MessageReceivedAsync(topic, amr.ApplicationMessage.Payload);
+                        break;
+                    case string status when status.Contains("/status/"):
+                        await StatusUpdateAsync(topic, amr.ApplicationMessage.Payload);
+                        break;
+                }
+            });
+
             // Do not repeat app initialization when the Window already has content,
             // just ensure that the window is active
             if (!(Window.Current.Content is Frame rootFrame))
@@ -103,6 +118,22 @@ namespace LUMO.Messenger.UWP
                 // Ensure the current window is active
                 Window.Current.Activate();
             }
+        }
+
+        private async Task MessageReceivedAsync(string topic, byte[] payload)
+        {
+            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+                MessengerClient.OnMessageReceived(topic, payload);
+            });
+        }
+
+        private async Task StatusUpdateAsync(string topic, byte[] payload)
+        {
+            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+                MessengerClient.OnStatusUpdate(topic, payload);
+            });
         }
 
         /// <summary>

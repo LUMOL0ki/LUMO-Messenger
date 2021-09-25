@@ -3,9 +3,12 @@ using LUMO.Messenger.UWP.Clients;
 using LUMO.Messenger.UWP.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
+using Windows.ApplicationModel.Core;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
@@ -37,6 +40,22 @@ namespace LUMO.Messenger.UWP
         {
             base.OnNavigatedTo(e);
             messengerClient = ((App)Application.Current).MessengerClient;
+            messengerClient.OnConnected += MessengerClient_OnConnected;
+        }
+
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            base.OnNavigatedFrom(e);
+            messengerClient.OnConnected -= MessengerClient_OnConnected;
+            ErrorText.Text = "";
+        }
+
+        private async void MessengerClient_OnConnected()
+        {
+            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+                Frame.Navigate(typeof(MainPage));
+            });
         }
 
         private void NewAccountButton_Click(object sender, RoutedEventArgs e)
@@ -44,7 +63,7 @@ namespace LUMO.Messenger.UWP
             Frame.Navigate(typeof(SignUpPage), null, new SlideNavigationTransitionInfo() { Effect = SlideNavigationTransitionEffect.FromRight });
         }
 
-        private void SignInButton_Click(object sender, RoutedEventArgs e)
+        private async Task SignIn()
         {
             messengerClient.ClientId = nicknameText.Text;
             messengerClient.User = new Account
@@ -52,8 +71,32 @@ namespace LUMO.Messenger.UWP
                 Nickname = messengerClient.ClientId,
                 Status = Status.Online
             };
-            //await messengerClient.ConnectAsync();
-            Frame.Navigate(typeof(MainPage));
+            signInGrid.Visibility = Visibility.Collapsed;
+            loading.IsActive = true;
+            try
+            {
+                await messengerClient.ConnectAsync();
+            }
+            catch (Exception)
+            {
+                signInGrid.Visibility = Visibility.Visible;
+                loading.IsActive = false;
+                ErrorText.Text = "Sign in failed";
+                ErrorText.Visibility = Visibility.Visible;
+            }
+        }
+
+        private async void SignInButton_Click(object sender, RoutedEventArgs e)
+        {
+            await SignIn();
+        }
+
+        private async void Page_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if(e.Key == Windows.System.VirtualKey.Enter)
+            {
+                await SignIn();
+            }
         }
     }
 }

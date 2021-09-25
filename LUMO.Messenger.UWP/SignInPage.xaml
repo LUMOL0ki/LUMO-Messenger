@@ -4,19 +4,24 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:LUMO.Messenger.UWP"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
-    Background="{StaticResource PrimaryBackgroundColor}">
+    Background="{StaticResource PrimaryBackgroundColor}" KeyDown="Page_KeyDown">
 
-    <ListView Width="350" Padding="16" CornerRadius="8" Background="{StaticResource SecondaryBackgroundColor}" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center" SelectionMode="None">
-        <ListView.ItemContainerStyle>
-            <Style TargetType="ListViewItem">
-                <Setter Property="Margin" Value="0 4"/>
-            </Style>
-        </ListView.ItemContainerStyle>
-        <Image Source="/Assets/VSB-TUO  ochranna zona-CZ.png" HorizontalAlignment="Center"/>
-        <ListViewItem HorizontalContentAlignment="Stretch" Padding="0">
-            <TextBox x:Name="nicknameText" PlaceholderText="Nickname" HorizontalAlignment="Stretch" BorderThickness="0" Padding="4 8" SelectionHighlightColor="{StaticResource SecondaryButtonActiveColor}" Background="{StaticResource PrimaryBackgroundColor}" Foreground="{StaticResource PrimaryTextColor}" CornerRadius="4">
+    <Grid Background="{StaticResource PrimaryBackgroundColor}">
+        <Grid x:Name="signInGrid" Width="350" RowSpacing="8" Padding="16" CornerRadius="8" Background="{StaticResource SecondaryBackgroundColor}" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+            </Grid.RowDefinitions>
+            
+            <Image Grid.Row="0" Source="/Assets/VSB-TUO  ochranna zona-CZ.png" HorizontalAlignment="Center"/>
+            <TextBlock Grid.Row="1" x:Name="ErrorText" Text="Error message" Visibility="Collapsed" TextWrapping="WrapWholeWords" Foreground="{StaticResource OfflineStatusColor}"/>
+            <TextBox Grid.Row="2" x:Name="nicknameText" PlaceholderText="Nickname" HorizontalAlignment="Stretch" BorderThickness="0" Padding="4 8" SelectionHighlightColor="{StaticResource SecondaryButtonActiveColor}" Background="{StaticResource PrimaryBackgroundColor}" Foreground="{StaticResource PrimaryTextColor}" CornerRadius="4">
                 <TextBox.Resources>
                     <ResourceDictionary>
                         <ResourceDictionary.MergedDictionaries>
@@ -39,9 +44,7 @@
                     <SolidColorBrush Color="{StaticResource SecondaryTextColor}"/>
                 </TextBox.PlaceholderForeground>
             </TextBox>
-        </ListViewItem>
-        <ListViewItem HorizontalContentAlignment="Stretch" Padding="0">
-            <PasswordBox x:Name="passwordText" PlaceholderText="Password" HorizontalAlignment="Stretch" BorderThickness="0" Padding="4 8" Background="{StaticResource PrimaryBackgroundColor}" Foreground="{StaticResource PrimaryTextColor}"  CornerRadius="4">
+            <PasswordBox Grid.Row="3" x:Name="passwordText" PlaceholderText="Password" HorizontalAlignment="Stretch" BorderThickness="0" Padding="4 8" Background="{StaticResource PrimaryBackgroundColor}" Foreground="{StaticResource PrimaryTextColor}"  CornerRadius="4">
                 <PasswordBox.Resources>
                     <ResourceDictionary>
                         <ResourceDictionary.MergedDictionaries>
@@ -64,12 +67,8 @@
                     </ResourceDictionary>
                 </PasswordBox.Resources>
             </PasswordBox>
-        </ListViewItem>
-        <ListViewItem>
-            <HyperlinkButton x:Name="NewAccountButton" Padding="0" Foreground="{StaticResource PrimaryButtonColor}" Click="NewAccountButton_Click">Create new account</HyperlinkButton>
-        </ListViewItem>
-        <ListViewItem HorizontalContentAlignment="Stretch" Padding="0">
-            <Button x:Name="signInButton" Style="{StaticResource PrimaryButtonStyle}" HorizontalAlignment="Stretch" Click="SignInButton_Click">
+            <HyperlinkButton Grid.Row="4" x:Name="NewAccountButton" Margin="8 0" Padding="0" Foreground="{StaticResource PrimaryButtonColor}" Click="NewAccountButton_Click">Create new account</HyperlinkButton>
+            <Button Grid.Row="5" x:Name="signInButton" Style="{StaticResource PrimaryButtonStyle}" HorizontalAlignment="Stretch" Click="SignInButton_Click">
                 <Button.Resources>
                     <ResourceDictionary>
                         <ResourceDictionary.MergedDictionaries>
@@ -85,7 +84,7 @@
                 </Button.Resources>
                 Sign in
             </Button>
-        </ListViewItem>
-        
-    </ListView>
+        </Grid>
+        <muxc:ProgressRing x:Name="loading" Width="80" Height="80" IsActive="False" Foreground="{StaticResource PrimaryButtonColor}"/>
+    </Grid>
 </Page>
