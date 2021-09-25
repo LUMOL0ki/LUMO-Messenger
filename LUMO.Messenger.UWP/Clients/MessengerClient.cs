@@ -32,10 +32,9 @@ namespace LUMO.Messenger.UWP.Clients
                     Name = "all"
                 }
             };
-            //CurrentMessages = Groups.FirstOrDefault().Messages;
         }
 
-        public Contact User { get; set; }
+        public Account User { get; set; }
         public string Host { get; set; }
         public int Port { get; set; } = 1883;
         public string ClientId { get; set; }
@@ -63,14 +62,13 @@ namespace LUMO.Messenger.UWP.Clients
             Debug.WriteLine($"{DateTime.Now.ToShortTimeString()} disconnected.");
         }
 
-        private async Task SetStatusAsync(ContatStatus status)
+        private async Task SetStatusAsync(Status status)
         {
             await mqttClient.PublishAsync($"/mschat/status/{User.Nickname}", status.ToString().ToLower(), true);
         }
 
         private MessageReceived GetMessageReceived(string topic, byte[] payload)
         {
-            
             return MessageFactory.CreateMessageReceived(User, topic, payload);
         }
 
@@ -146,7 +144,7 @@ namespace LUMO.Messenger.UWP.Clients
             
 
             await mqttClient.ConnectAsync(mqttClientOptions);
-            await SetStatusAsync(ContatStatus.Online);
+            await SetStatusAsync(Status.Online);
         }
 
         public async Task ReconnectAsync()
@@ -154,7 +152,7 @@ namespace LUMO.Messenger.UWP.Clients
             try
             {
                 await mqttClient.ReconnectAsync();
-                await SetStatusAsync(ContatStatus.Online);
+                await SetStatusAsync(Status.Online);
                 await mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic("/mschat/#").Build());
 
                 foreach (MessageSend messageInQueue in messageQueue)
@@ -176,11 +174,25 @@ namespace LUMO.Messenger.UWP.Clients
 
         public async Task DisconnectAsync(MqttClientDisconnectReason reason)
         {
-            await SetStatusAsync(ContatStatus.Offline);
-            await mqttClient.DisconnectAsync(new MqttClientDisconnectOptions()
+            try 
+            { 
+                await mqttClient.UnsubscribeAsync("/mschat/#");
+                await SetStatusAsync(Status.Offline);
+                await mqttClient.DisconnectAsync(new MqttClientDisconnectOptions()
+                {
+                    ReasonCode = reason,
+                }, System.Threading.CancellationToken.None);
+                foreach(Group group in Groups)
+                {
+                    group.Messages.Clear();
+                }
+                Contacts.Clear();
+                CurrentMessages = null;
+            }
+            catch (Exception ex)
             {
-                ReasonCode = reason,
-            }, System.Threading.CancellationToken.None);
+                Debug.WriteLine(ex.Message);
+            }
         }
 
         public async Task SendMessageAsync(string message)
@@ -220,18 +232,18 @@ namespace LUMO.Messenger.UWP.Clients
             mqttClient.UseApplicationMessageReceivedHandler(func);
         }
 
-        public ContatStatus GetStatus(byte[] statusPayload)
+        public Status GetStatus(byte[] statusPayload)
         {
             string payloadText = Encoding.UTF8.GetString(statusPayload);
             string[] payloadParts = payloadText.Split(" ");
             string status = payloadParts.Count() > 1 ? payloadParts.Last() : payloadParts[0];
             try
             {
-                return (ContatStatus)Enum.Parse(typeof(ContatStatus), status, true);
+                return (Status)Enum.Parse(typeof(Status), status, true);
             }
             catch(Exception)
             {
-                return ContatStatus.Unknown;
+                return Status.Unknown;
             }
         }
     }

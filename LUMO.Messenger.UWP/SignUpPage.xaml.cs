@@ -1,4 +1,6 @@
-﻿using System;
+﻿using LUMO.Messenger.Models;
+using LUMO.Messenger.UWP.Models;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -22,17 +24,44 @@ namespace LUMO.Messenger.UWP
     /// </summary>
     public sealed partial class SignUpPage : Page
     {
+        private Account newUser;
+
         public SignUpPage()
         {
             this.InitializeComponent();
         }
 
-        private void BackButton_Click(object sender, RoutedEventArgs e)
+        private void GoBack()
         {
             if (Frame.CanGoBack)
             {
                 Frame.GoBack();
             }
+        }
+
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            GoBack();
+        }
+
+        private void SignUpButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(nicknameText.Text))
+            {
+                return;
+            }
+            if (!passwordText.Password.Equals(passwordAgainText.Password))
+            {
+                return;
+            }
+
+            newUser = new Account
+            {
+                Nickname = nicknameText.Text,
+                Password = passwordText.Password
+            };
+
+            GoBack();
         }
     }
 }

@@ -3,6 +3,7 @@ using LUMO.Messenger.UWP.Clients;
 using LUMO.Messenger.UWP.Models;
 using MQTTnet;
 using MQTTnet.Client;
+using MQTTnet.Client.Disconnecting;
 using MQTTnet.Client.Options;
 using System;
 using System.Collections.Generic;
@@ -36,10 +37,6 @@ namespace LUMO.Messenger.UWP
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        private ObservableCollection<Contact> contacts;
-        private ObservableCollection<Group> groups;
-
-        private Contact user;
         private MessengerClient messengerClient;
 
         public MainPage()
@@ -50,11 +47,7 @@ namespace LUMO.Messenger.UWP
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            user = ((App)Application.Current).user;
-            messengerClient = ((App)Application.Current).messengerClient;
-
-            contacts = messengerClient.Contacts;
-            groups = messengerClient.Groups;
+            messengerClient = ((App)Application.Current).MessengerClient;
 
             messengerClient.UseApplicationMessageReceivedHandler(async amr =>
             {
@@ -105,6 +98,14 @@ namespace LUMO.Messenger.UWP
             });
         }
 
+        private void GoBack()
+        {
+            if (Frame.CanGoBack)
+            {
+                Frame.GoBack();
+            }
+        }
+
         private async void SendButton_Click(object sender, RoutedEventArgs e)
         {
             await MessageSendAsync(SendText.Text);
@@ -113,6 +114,7 @@ namespace LUMO.Messenger.UWP
         private void GroupList_ItemClick(object sender, ItemClickEventArgs e)
         {
             Group clickedGroup = e.ClickedItem as Group;
+            contactList.SelectedIndex = -1;
             messengerClient.CurrentMessages = clickedGroup.Messages;
             messageReceiveList.ItemsSource = messengerClient.CurrentMessages;
             messengerClient.CurrentTopic = clickedGroup.Name;
@@ -121,19 +123,38 @@ namespace LUMO.Messenger.UWP
         private void ContactList_ItemClick(object sender, ItemClickEventArgs e)
         {
             Contact clickedContact = e.ClickedItem as Contact;
+            groupList.SelectedIndex = -1;
             messengerClient.CurrentMessages = clickedContact.Messages;
             messageReceiveList.ItemsSource = messengerClient.CurrentMessages;
             messengerClient.CurrentTopic = $"user/{clickedContact.Nickname}";
         }
 
-        private async void RefreshConnectionButton_Click(object sender, RoutedEventArgs e)
-        {
-            await messengerClient.ReconnectAsync();
-        }
-
         private async void SendText_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            await MessageSendAsync(SendText.Text);
+            if(e.Key == VirtualKey.Enter)
+            {
+                await MessageSendAsync(SendText.Text);
+            }
+        }
+
+        private async void SignOutButton_Click(object sender, RoutedEventArgs e)
+        {
+            //await messengerClient.DisconnectAsync(MqttClientDisconnectReason.NormalDisconnection);
+            GoBack();
+        }
+
+        private void SearchText_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(SearchText.Text))
+            {
+                groupList.ItemsSource = messengerClient.Groups;
+                contactList.ItemsSource = messengerClient.Contacts;
+            }
+            else
+            {
+                groupList.ItemsSource = messengerClient.Groups.Where(g => g.Name.Contains(SearchText.Text, StringComparison.CurrentCultureIgnoreCase));
+                contactList.ItemsSource = messengerClient.Contacts.Where(c => c.Nickname.Contains(SearchText.Text, StringComparison.CurrentCultureIgnoreCase));
+            }
         }
     }
 }

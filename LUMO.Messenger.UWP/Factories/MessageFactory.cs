@@ -22,22 +22,22 @@ namespace LUMO.Messenger.UWP.Factories
             };
         }
 
-        public static MessageReceived CreateMessageReceived(Contact user, string topic, byte[] payload)
+        public static MessageReceived CreateMessageReceived(Account user, string topic, byte[] payload)
         {
             MessageReceived message = MessageHelper.Parse(topic, payload);
             message.Orientation = user.Nickname.Equals(message.Sender.Nickname) ? MessageOrientation.Right : MessageOrientation.Left;
             return message;
         }
 
-        public static MessageReceived CreateMessageReceived(Contact user, MessageSend message, MessageOrientation orientation)
+        public static MessageReceived CreateMessageReceived(Account user, MessageSend message, MessageOrientation orientation)
         {
             return new MessageReceived
             {
-                Sender = user,
+                Sender = new Contact { Nickname = user.Nickname, Status = user.Status },
                 Content = message.Content,
                 Timestamp = message.Timestamp,
                 Orientation = orientation
-            };
+        };
         }
     }
 }

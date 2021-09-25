@@ -37,14 +37,16 @@
             <Image Source="/Assets/VSB-TUO  ochranna zona-CZ.png"/>
         </ListViewItem>
         <ListViewItem HorizontalContentAlignment="Stretch" Padding="0">
-            <TextBox PlaceholderText="Nickname" HorizontalAlignment="Stretch" BorderThickness="0" Padding="4 8" Background="{StaticResource PrimaryBackgroundColor}" Foreground="{StaticResource PrimaryTextColor}" CornerRadius="4">
+            <TextBox x:Name="nicknameText" PlaceholderText="Nickname" HorizontalAlignment="Stretch" BorderThickness="0" Padding="4 8" Background="{StaticResource PrimaryBackgroundColor}" Foreground="{StaticResource PrimaryTextColor}" CornerRadius="4">
                 <TextBox.Resources>
                     <ResourceDictionary>
                         <ResourceDictionary.MergedDictionaries>
                             <ResourceDictionary>
                                 <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="{StaticResource PrimaryTextColor}"/>
-                                <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="Transparent"/>
-                                <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="Transparent"/>
+                                <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="{StaticResource SecondaryButtonHoverColor}"/>
+                                <SolidColorBrush x:Key="TextControlForegroundFocused" Color="{StaticResource PrimaryTextColor}"/>
+                                <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="{StaticResource SecondaryButtonActiveColor}"/>
+                                <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="{StaticResource SecondaryButtonActiveColor}"/>
                                 <SolidColorBrush x:Key="TextControlButtonForeground" Color="{StaticResource PrimaryTextColor}"/>
                                 <SolidColorBrush x:Key="TextControlButtonForegroundPointerOver" Color="{StaticResource PrimaryTextColor}"/>
                                 <SolidColorBrush x:Key="TextControlButtonBackgroundPointerOver" Color="{StaticResource SecondaryButtonHoverColor}"/>
@@ -60,20 +62,24 @@
             </TextBox>
         </ListViewItem>
         <ListViewItem HorizontalContentAlignment="Stretch" Padding="0">
-            <PasswordBox PlaceholderText="Password" HorizontalAlignment="Stretch" BorderThickness="0" Padding="4 8" Background="{StaticResource PrimaryBackgroundColor}" Foreground="{StaticResource PrimaryTextColor}"  CornerRadius="4">
+            <PasswordBox x:Name="passwordText" PlaceholderText="Password" HorizontalAlignment="Stretch" BorderThickness="0" Padding="4 8" Background="{StaticResource PrimaryBackgroundColor}" Foreground="{StaticResource PrimaryTextColor}"  CornerRadius="4">
                 <PasswordBox.Resources>
                     <ResourceDictionary>
                         <ResourceDictionary.MergedDictionaries>
                             <ResourceDictionary>
                                 <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="{StaticResource PrimaryTextColor}"/>
-                                <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="Transparent"/>
-                                <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="Transparent"/>
+                                <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="{StaticResource SecondaryButtonHoverColor}"/>
+                                <SolidColorBrush x:Key="TextControlForegroundFocused" Color="{StaticResource PrimaryTextColor}"/>
+                                <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="{StaticResource SecondaryButtonActiveColor}"/>
+                                <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="{StaticResource PrimaryButtonActiveColor}"/>
                                 <SolidColorBrush x:Key="TextControlButtonForeground" Color="{StaticResource PrimaryTextColor}"/>
                                 <SolidColorBrush x:Key="TextControlButtonForegroundPointerOver" Color="{StaticResource PrimaryTextColor}"/>
                                 <SolidColorBrush x:Key="TextControlButtonBackgroundPointerOver" Color="{StaticResource SecondaryButtonHoverColor}"/>
                                 <SolidColorBrush x:Key="TextControlButtonForegroundPressed" Color="{StaticResource PrimaryTextColor}"/>
                                 <SolidColorBrush x:Key="TextControlButtonBackgroundPressed" Color="{StaticResource SecondaryButtonActiveColor}"/>
                                 <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="{StaticResource SecondaryTextColor}"/>
+                                <SolidColorBrush x:Key="TextControlPlaceholderForegroundPointerOver" Color="{StaticResource SecondaryTextColor}"/>
+                                <SolidColorBrush x:Key="TextControlPlaceholderForegroundFocused" Color="{StaticResource SecondaryTextColor}"/>
                             </ResourceDictionary>
                         </ResourceDictionary.MergedDictionaries>
                     </ResourceDictionary>
@@ -81,20 +87,24 @@
             </PasswordBox>
         </ListViewItem>
         <ListViewItem HorizontalContentAlignment="Stretch" Padding="0">
-            <PasswordBox PlaceholderText="Password again" HorizontalAlignment="Stretch" BorderThickness="0" Padding="4 8" Background="{StaticResource PrimaryBackgroundColor}" Foreground="{StaticResource PrimaryTextColor}"  CornerRadius="4">
+            <PasswordBox x:Name="passwordAgainText" PlaceholderText="Password again" HorizontalAlignment="Stretch" BorderThickness="0" Padding="4 8" Background="{StaticResource PrimaryBackgroundColor}" Foreground="{StaticResource PrimaryTextColor}"  CornerRadius="4">
                 <PasswordBox.Resources>
                     <ResourceDictionary>
                         <ResourceDictionary.MergedDictionaries>
                             <ResourceDictionary>
                                 <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="{StaticResource PrimaryTextColor}"/>
-                                <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="Transparent"/>
-                                <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="Transparent"/>
+                                <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="{StaticResource SecondaryButtonHoverColor}"/>
+                                <SolidColorBrush x:Key="TextControlForegroundFocused" Color="{StaticResource PrimaryTextColor}"/>
+                                <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="{StaticResource SecondaryButtonActiveColor}"/>
+                                <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="{StaticResource PrimaryButtonActiveColor}"/>
                                 <SolidColorBrush x:Key="TextControlButtonForeground" Color="{StaticResource PrimaryTextColor}"/>
                                 <SolidColorBrush x:Key="TextControlButtonForegroundPointerOver" Color="{StaticResource PrimaryTextColor}"/>
                                 <SolidColorBrush x:Key="TextControlButtonBackgroundPointerOver" Color="{StaticResource SecondaryButtonHoverColor}"/>
                                 <SolidColorBrush x:Key="TextControlButtonForegroundPressed" Color="{StaticResource PrimaryTextColor}"/>
                                 <SolidColorBrush x:Key="TextControlButtonBackgroundPressed" Color="{StaticResource SecondaryButtonActiveColor}"/>
                                 <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="{StaticResource SecondaryTextColor}"/>
+                                <SolidColorBrush x:Key="TextControlPlaceholderForegroundPointerOver" Color="{StaticResource SecondaryTextColor}"/>
+                                <SolidColorBrush x:Key="TextControlPlaceholderForegroundFocused" Color="{StaticResource SecondaryTextColor}"/>
                             </ResourceDictionary>
                         </ResourceDictionary.MergedDictionaries>
                     </ResourceDictionary>
@@ -102,7 +112,7 @@
             </PasswordBox>
         </ListViewItem>
         <ListViewItem HorizontalContentAlignment="Stretch" Padding="0">
-            <Button Style="{StaticResource PrimaryButtonStyle}" HorizontalAlignment="Stretch">
+            <Button x:Name="signUpButton" Style="{StaticResource PrimaryButtonStyle}" HorizontalAlignment="Stretch" Click="SignUpButton_Click">
                 <Button.Resources>
                     <ResourceDictionary>
                         <ResourceDictionary.MergedDictionaries>

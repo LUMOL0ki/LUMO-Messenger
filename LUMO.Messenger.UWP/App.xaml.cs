@@ -1,6 +1,7 @@
 ﻿using LUMO.Messenger.Models;
 using LUMO.Messenger.UWP.Clients;
 using LUMO.Messenger.UWP.Factories;
+using LUMO.Messenger.UWP.Models;
 using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Client.Connecting;
@@ -39,9 +40,6 @@ namespace LUMO.Messenger.UWP
         private readonly string username = "mobilni";
         private readonly string password = "Systemy";
 
-        public Contact user;
-        public MessengerClient messengerClient;
-
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -52,6 +50,8 @@ namespace LUMO.Messenger.UWP
             this.Suspending += OnSuspending;
         }
 
+        public MessengerClient MessengerClient { get; private set; }
+
         /// <summary>
         /// Invoked when the application is launched normally by the end user.  Other entry points
         /// will be used such as when the application is launched to open a specific file.
@@ -59,18 +59,16 @@ namespace LUMO.Messenger.UWP
         /// <param name="e">Details about the launch request and process.</param>
         protected override void OnLaunched(LaunchActivatedEventArgs e)
         {
-            user = new Contact
-            {
-                Nickname = clientId,
-                Status = ContatStatus.Online
-            };
-
-            messengerClient = new MessengerClient
+            MessengerClient = new MessengerClient
             {
                 Host = host,
                 Port = port,
                 ClientId = clientId,
-                User = user,
+                User = new Account
+                {
+                    Nickname = clientId,
+                    Status = Status.Online
+                },
                 Username = username,
                 Password = password
             };
@@ -128,7 +126,7 @@ namespace LUMO.Messenger.UWP
         {
             try
             {
-                await messengerClient.DisconnectAsync(MqttClientDisconnectReason.NormalDisconnection);
+                await MessengerClient.DisconnectAsync(MqttClientDisconnectReason.NormalDisconnection);
             }
             catch(Exception ex)
             {
