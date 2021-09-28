@@ -35,11 +35,8 @@ namespace LUMO.Messenger.UWP
     /// </summary>
     sealed partial class App : Application
     {
-        private readonly string host = "pcfeib425t.vsb.cz";
-        private readonly int port = 1883;
-        private readonly string clientId = "MOR0157";
-        private readonly string username = "mobilni";
-        private readonly string password = "Systemy";
+        private readonly string host = "localhost";
+        private readonly int port = 1884;
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -63,15 +60,7 @@ namespace LUMO.Messenger.UWP
             MessengerClient = new MessengerClient
             {
                 Host = host,
-                Port = port,
-                ClientId = clientId,
-                User = new Account
-                {
-                    Nickname = clientId,
-                    Status = Status.Online
-                },
-                Username = username,
-                Password = password
+                Port = port
             };
 
             MessengerClient.UseApplicationMessageReceivedHandler(async amr =>

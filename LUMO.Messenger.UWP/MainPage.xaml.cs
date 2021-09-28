@@ -70,10 +70,11 @@ namespace LUMO.Messenger.UWP
             });
         }
 
-        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        protected override async void OnNavigatedFrom(NavigationEventArgs e)
         {
             base.OnNavigatedFrom(e);
             messengerClient.OnDisconnected -= MessengerClient_OnDisconnected;
+            await messengerClient.DisconnectAsync(MqttClientDisconnectReason.NormalDisconnection);
         }
 
         private async void MessengerClient_OnDisconnected()
@@ -145,9 +146,8 @@ namespace LUMO.Messenger.UWP
             }
         }
 
-        private async void SignOutButton_Click(object sender, RoutedEventArgs e)
+        private void SignOutButton_Click(object sender, RoutedEventArgs e)
         {
-            await messengerClient.DisconnectAsync(MqttClientDisconnectReason.NormalDisconnection);
             GoBack();
         }
 

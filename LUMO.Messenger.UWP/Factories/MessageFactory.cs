@@ -34,7 +34,7 @@ namespace LUMO.Messenger.UWP.Factories
             return new MessageReceived
             {
                 Sender = new Contact { Nickname = user.Nickname, Status = user.Status },
-                Content = message.Content,
+                Content = message.Content.Split(": ").Last(),
                 Timestamp = message.Timestamp,
                 Orientation = orientation
         };

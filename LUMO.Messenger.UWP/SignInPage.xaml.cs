@@ -66,6 +66,8 @@ namespace LUMO.Messenger.UWP
         private async Task SignIn()
         {
             messengerClient.ClientId = nicknameText.Text;
+            messengerClient.Username = nicknameText.Text;
+            messengerClient.Password = passwordText.Password;
             messengerClient.User = new Account
             {
                 Nickname = messengerClient.ClientId,

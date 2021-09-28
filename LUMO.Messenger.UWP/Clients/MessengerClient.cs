@@ -61,7 +61,7 @@ namespace LUMO.Messenger.UWP.Clients
             OnConnected?.Invoke();
             Debug.WriteLine(args.AuthenticateResult.ResultCode);
             Debug.WriteLine($"{DateTime.Now.ToShortTimeString()} connected.");
-            await mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic("/mschat/#").Build());
+            await mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic("/mschat/#").WithExactlyOnceQoS().Build());
             await SetStatusAsync(Status.Online);
         }
 
@@ -148,6 +148,7 @@ namespace LUMO.Messenger.UWP.Clients
                                                    .WithCommunicationTimeout(TimeSpan.FromSeconds(3))
                                                    .WithClientId(ClientId)
                                                    .WithCredentials(Username, Password)
+                                                   .WithCleanSession(false)
                                                    .WithWillDelayInterval(60)
                                                    .WithWillMessage(MessageFactory.CreateWillMessage(User.Nickname))
                                                    .Build();
@@ -217,7 +218,7 @@ namespace LUMO.Messenger.UWP.Clients
 
             try
             {
-                await mqttClient.PublishAsync(message.Topic, message.Content, true);
+                await mqttClient.PublishAsync(message.Topic, message.Content, MQTTnet.Protocol.MqttQualityOfServiceLevel.ExactlyOnce, false);
                 if (message.Topic.Contains("user") && !message.Topic.Contains($"user/{User.Nickname}"))
                 {
                     CurrentMessages.Add(MessageFactory.CreateMessageReceived(User, message, MessageOrientation.Right));
@@ -251,7 +252,7 @@ namespace LUMO.Messenger.UWP.Clients
             }
         }
 
-        public async void Dispose()
+        public void Dispose()
         {
             foreach (Group group in Groups)
             {
