@@ -41,6 +41,7 @@ namespace LUMO.Messenger.UWP.Clients
         public string Username { get; set; }
         public string Password { get; set; }
         public string CurrentTopic { get; set; }
+        public bool IsConnected => mqttClient.IsConnected;
 
         public ObservableCollection<Contact> Contacts { get; }
         public ObservableCollection<Group> Groups { get; }
@@ -192,11 +193,13 @@ namespace LUMO.Messenger.UWP.Clients
                 await mqttClient.DisconnectAsync(new MqttClientDisconnectOptions()
                 {
                     ReasonCode = reason,
-                }, System.Threading.CancellationToken.None);
+                });
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"When disconnecting exception was invoked: {ex.Message}");
+                await Task.Delay(1800);
+                await DisconnectAsync(reason);
             }
         }
 
