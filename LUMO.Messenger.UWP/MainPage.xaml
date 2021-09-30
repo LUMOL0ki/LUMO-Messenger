@@ -67,16 +67,16 @@
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
                     <FontIcon Grid.Column="0" Glyph="&#xE721;" Margin="8 4" Foreground="{StaticResource PrimaryTextColor}"/>
-                    <TextBox x:Name="SearchText" Grid.Column="1" PlaceholderText="Search..." BorderThickness="0" Padding="4 8" Background="{x:Null}" VerticalAlignment="Stretch" Foreground="{StaticResource PrimaryTextColor}" FocusVisualSecondaryBrush="{x:Null}" TextChanged="SearchText_TextChanged">
+                    <TextBox x:Name="SearchText" Grid.Column="1" PlaceholderText="Search..." BorderThickness="0" Padding="4 8" Background="{x:Null}" VerticalAlignment="Stretch" Foreground="{StaticResource PrimaryTextColor}" TextChanged="SearchText_TextChanged">
                         <TextBox.Resources>
                             <ResourceDictionary>
                                 <ResourceDictionary.MergedDictionaries>
                                     <ResourceDictionary>
                                         <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="{StaticResource PrimaryTextColor}"/>
                                         <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="Transparent"/>
-                                        <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="Transparent"/>
                                         <SolidColorBrush x:Key="TextControlForegroundFocused" Color="{StaticResource PrimaryTextColor}"/>
-                                        <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="{StaticResource SecondaryButtonActiveColor}"/>
+                                        <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="{StaticResource SecondaryButtonActiveColor}"/>
+                                        <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="{StaticResource PrimaryButtonActiveColor}"/>
                                         <SolidColorBrush x:Key="TextControlButtonForeground" Color="{StaticResource PrimaryTextColor}"/>
                                         <SolidColorBrush x:Key="TextControlButtonForegroundPointerOver" Color="{StaticResource PrimaryTextColor}"/>
                                         <SolidColorBrush x:Key="TextControlButtonBackgroundPointerOver" Color="{StaticResource SecondaryButtonHoverColor}"/>

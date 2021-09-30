@@ -77,13 +77,18 @@ namespace LUMO.Messenger.UWP
             loading.IsActive = true;
             try
             {
+                if (messengerClient.IsConnected)
+                {
+                    await messengerClient.DisconnectAsync(MQTTnet.Client.Disconnecting.MqttClientDisconnectReason.NormalDisconnection);
+                }
+
                 await messengerClient.ConnectAsync();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 signInGrid.Visibility = Visibility.Visible;
                 loading.IsActive = false;
-                ErrorText.Text = "Sign in failed";
+                ErrorText.Text = $"Sign in failed: {ex.Message}";
                 ErrorText.Visibility = Visibility.Visible;
             }
         }
