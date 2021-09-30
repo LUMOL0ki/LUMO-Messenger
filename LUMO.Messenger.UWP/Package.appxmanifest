@@ -8,7 +8,7 @@
 
   <Identity
     Name="14f02af0-0380-4cee-8301-9db964eba615"
-    Publisher="CN=morav"
+    Publisher="CN=LUMO Trade Service"
     Version="1.0.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="14f02af0-0380-4cee-8301-9db964eba615" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
